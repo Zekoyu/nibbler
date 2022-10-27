@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <chrono>
+#include <vector>
+#include <algorithm>
 
 #include "./game_keycodes.hpp"
 
@@ -55,11 +57,13 @@ int main()
 	// }
 
 	init_nibbler(60, 40, 10, "Nibbler");
+	std::vector<int> alreadyPressedKeys;
 
 	while (1)
 	{
 		auto frameStartTime = std::chrono::high_resolution_clock::now();
 
+		std::vector<int> pressedKeys;
 		int *keys = NULL;
 		int size = 0;
 		get_pressed_keys(&keys, &size);
@@ -68,9 +72,67 @@ int main()
 			if (keys[i] == NONE_KEY)
 				continue;
 
-			std::cout << keys[i] << std::endl;
+			pressedKeys.push_back(keys[i]);
 		}
 		free(keys);
+
+		for (int key : pressedKeys)
+		{
+			if (std::find(alreadyPressedKeys.begin(), alreadyPressedKeys.end(), key) != alreadyPressedKeys.end())
+				continue;
+
+			alreadyPressedKeys.push_back(key);
+
+			// Manage newly pressed key logic
+			switch(key)
+			{
+				case EXIT_KEY:
+					std::cout << "Exit\n";
+					break;
+
+				case UP_KEY:
+					std::cout << "Go up\n";
+					break;
+
+				case DOWN_KEY:
+					std::cout << "Go down\n";
+					break;
+
+				case LEFT_KEY:
+					std::cout << "Go left\n";
+					break;
+
+				case RIGHT_KEY:
+					std::cout << "Go right\n";
+					break;
+
+				case ONE_KEY:
+					std::cout << "Switch to lib #1\n";
+					break;
+
+				case TWO_KEY:
+					std::cout << "Switch to lib #2\n";
+					break;
+
+				case THREE_KEY:
+					std::cout << "Switch to lib #3\n";
+					break;
+			}
+		}
+
+		// Remove keys that were released
+		for (auto keyIt = alreadyPressedKeys.begin(); keyIt != alreadyPressedKeys.end(); )
+		{
+			auto keyInKeys = std::find(pressedKeys.begin(), pressedKeys.end(), *keyIt);
+
+			if (keyInKeys != pressedKeys.end())
+			{
+				++keyIt;
+				continue;
+			}
+
+			keyIt = alreadyPressedKeys.erase(keyIt);
+		}
 
 
 		std::chrono::microseconds frameDuration;
@@ -81,7 +143,7 @@ int main()
 			usleep(500);
 		} while(frameDuration.count() < 1000 * 1000 / FPS);
 
-		std::cout << "Frame took " << (frameDuration.count() / 1000) << "ms to run" << std::endl;
+		// std::cout << "Frame took " << (frameDuration.count() / 1000) << "ms to run" << std::endl;
 	}
 
 
