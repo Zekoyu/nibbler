@@ -1,0 +1,9 @@
+#define NONE_KEY 0
+#define EXIT_KEY 1
+#define UP_KEY 2
+#define DOWN_KEY 3
+#define LEFT_KEY 4
+#define RIGHT_KEY 5
+#define ONE_KEY 6
+#define TWO_KEY 7
+#define THREE_KEY 8
