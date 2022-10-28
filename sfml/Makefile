@@ -1,5 +1,5 @@
 CC = g++
-CPPFLAGS = -Wall -Wextra -Werror -O3 -fPIC
+CPPFLAGS = -Wall -Wextra -Werror -fPIC -O3
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 NAME = libsfml.so

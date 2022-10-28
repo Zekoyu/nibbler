@@ -9,7 +9,9 @@
 #include "./game_keycodes.hpp"
 
 #define REFRESH_FPS 60
-#define GAME_FPS 10
+#define GAME_FPS 20
+#define MAP_WIDTH 60
+#define MAP_HEIGHT 40
 
 typedef int (*init_nibbler_t)(int width, int height, int cell_size, const char *name);
 typedef int (*get_pressed_keys_t)(int **keys, int *size);
@@ -26,6 +28,101 @@ void *loadDynamicSymbol(void *handle, const char *symbol)
 		exit(1);
 	}
 	return func;
+}
+
+class Snake
+{
+	private:
+		std::vector<std::pair<int, int>> _body;
+		int _vx;
+		int _vy;
+
+	public:
+		// xStart = tail xEnd = head position (if == means 1 block)
+		Snake(int xStart, int xEnd, int y)
+		{
+			_vx = 1;
+			_vy = 0;
+			for (int x = xStart; x <= xEnd; x++)
+				_body.insert(_body.begin(), std::make_pair(x, y));
+		}
+
+		void grow()
+		{
+			_body.push_back(std::make_pair(_body.back().first, _body.back().second));
+		}
+
+		void move()
+		{
+			for (int i = _body.size() - 1; i > 0; i--)
+			{
+				_body[i].first = _body[i - 1].first;
+				_body[i].second = _body[i - 1].second;
+			}
+			_body[0].first += _vx;
+			_body[0].second += _vy;
+		}
+
+		int getHeadX() const
+		{
+			return _body[0].first;
+		}
+
+		int getHeadY() const
+		{
+			return _body[0].second;
+		}
+
+		int getVelX() const
+		{
+			return _vx;
+		}
+
+		int getVelY() const
+		{
+			return _vy;
+		}
+
+		void setDirection(int vx, int vy)
+		{
+			if (vx != -_vx)
+				_vx = vx;
+
+			if (vy != -_vy)
+				_vy = vy;
+		}
+
+		bool isSelfColliding() const
+		{
+			for (auto it = _body.begin() + 1; it != _body.end(); it++)
+			{
+				if (it->first == _body[0].first && it->second == _body[0].second)
+					return true;
+			}
+			return false;
+		}
+
+		std::vector<std::pair<int, int>> getBody()
+		{
+			return _body;
+		}
+};
+
+std::pair<int, int> &generateFood(std::pair<int, int> &food, std::vector<std::pair<int, int>> &snakeBody)
+{
+	food.first = rand() % MAP_WIDTH;
+	food.second = rand() % MAP_HEIGHT;
+
+	// No space left for food
+	if (snakeBody.size() == MAP_WIDTH * MAP_HEIGHT)
+		return food;
+
+	for (std::pair<int, int> &bodyPart : snakeBody)
+	{
+		if (bodyPart.first == food.first && bodyPart.second == food.second)
+			return generateFood(food, snakeBody);
+	}
+	return food;
 }
 
 int main()
@@ -45,14 +142,17 @@ int main()
 	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(handle, "set_square_color");
 	render_t render = (render_t) loadDynamicSymbol(handle, "render");
 
-	init_nibbler(60, 40, 10, "Nibbler");
+	init_nibbler(MAP_WIDTH, MAP_HEIGHT, 10, "Nibbler");
 	std::vector<int> alreadyPressedKeys;
 
-	int x = 0;
-	int y = 0;
-	int vx = 1;
-	int vy = 0;
+
 	int currentFrameInSecond = 0;
+	Snake snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
+	auto snakeBody = snake.getBody();
+	std::pair<int, int> food = generateFood(food, snakeBody);
+
+	int vy = 0;
+	int vx = 1;
 
 	while (1)
 	{
@@ -87,37 +187,38 @@ int main()
 					break;
 
 				case UP_KEY:
-					if (vy != 1)
+					// Still check so that if snake goes LEFT, user presses UP then RIGHT, it will go right instead of nothing
+					if (snake.getVelY() != 1)
 					{
-						vx = 0;
 						vy = -1;
+						vx = 0;
 					}
 					std::cout << "Go up\n";
 					break;
 
 				case DOWN_KEY:
-					if (vy != -1)
+					if (snake.getVelY() != -1)
 					{
-						vx = 0;
 						vy = 1;
+						vx = 0;
 					}
 					std::cout << "Go down\n";
 					break;
 
 				case LEFT_KEY:
-					if (vx != 1)
+					if (snake.getVelX() != 1)
 					{
-						vx = -1;
 						vy = 0;
+						vx = -1;
 					}
 					std::cout << "Go left\n";
 					break;
 
 				case RIGHT_KEY:
-					if (vx != -1)
+					if (snake.getVelX() != -1)
 					{
-						vx = 1;
 						vy = 0;
+						vx = 1;
 					}
 					std::cout << "Go right\n";
 					break;
@@ -154,28 +255,38 @@ int main()
 		if (currentFrameInSecond == REFRESH_FPS)
 			currentFrameInSecond = 0;
 
-		if (currentFrameInSecond % GAME_FPS == 0)
+		if (currentFrameInSecond % (REFRESH_FPS / GAME_FPS) == 0)
 		{
 			// TODO gameTick function
 			std::cout << "Game tick" << std::endl;
-			(void)clear_screen;
-			(void)set_square_color;
-			(void)render;
 			clear_screen();
 
-			x += vx;
-			y += vy;
+			// us temp variable vx / vy in case the user moves very fast eg. UP, RIGHT (while going left) between
+			// game ticks they cannot make a 180° turn
+			snake.setDirection(vx, vy);
 
-			if (x < 0)
-				x = 59;
-			if (x > 59)
-				x = 0;
-			if (y < 0)
-				y = 39;
-			if (y > 39)
-				y = 0;
+			snake.move();
 
-			set_square_color(x, y, 255, 0, 0, 255);
+			if (snake.getHeadX() >= MAP_WIDTH || snake.getHeadX() < 0 || snake.getHeadY() >= MAP_HEIGHT || snake.getHeadY() < 0 \
+				|| snake.isSelfColliding())
+			{
+				std::cout << "Game over" << std::endl;
+				// see https://github.com/microsoft/wslg/issues/445 for segfault, always do LIBGL_ALWAYS_SOFTWARE=1  ./nibbler  on WSL
+				exit(0);
+			}
+
+			if (snake.getHeadX() == food.first && snake.getHeadY() == food.second)
+			{
+				snake.grow();
+				food = generateFood(food, snakeBody);
+			}
+
+			snakeBody = snake.getBody();
+			for (std::pair<int, int> &bodyPart : snakeBody)
+			{
+				set_square_color(bodyPart.first, bodyPart.second, 0, 255, 0, 255);
+			}
+			set_square_color(food.first, food.second, 255, 0, 0, 255);
 
 			render();
 		}
