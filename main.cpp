@@ -127,20 +127,28 @@ std::pair<int, int> &generateFood(std::pair<int, int> &food, std::vector<std::pa
 
 int main()
 {
-	void *handle = dlopen("./sfml/libsfml.so", RTLD_LAZY);
-	if (!handle)
+	void *sfmlHandle = dlopen("./sfml/libsfml.so", RTLD_LAZY);
+	if (!sfmlHandle)
 	{
 		std::cerr << "dlopen failed: " << dlerror() << std::endl;
 		exit(EXIT_FAILURE);
 	}
-
 	std::cout << "Successfully opened library libsfml.so" << std::endl;
 
-	init_nibbler_t init_nibbler = (init_nibbler_t) loadDynamicSymbol(handle, "init_nibbler");
-	get_pressed_keys_t get_pressed_keys = (get_pressed_keys_t) loadDynamicSymbol(handle, "get_pressed_keys");
-	clear_screen_t clear_screen = (clear_screen_t) loadDynamicSymbol(handle, "clear_screen");
-	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(handle, "set_square_color");
-	render_t render = (render_t) loadDynamicSymbol(handle, "render");
+	void *portaudioHandle = dlopen("./portaudio/libportaudio.so", RTLD_LAZY);
+	if (!portaudioHandle)
+	{
+		std::cerr << "dlopen failed: " << dlerror() << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	std::cout << "Successfully opened library libportaudio.so" << std::endl;
+
+
+	init_nibbler_t init_nibbler = (init_nibbler_t) loadDynamicSymbol(sfmlHandle, "init_nibbler");
+	get_pressed_keys_t get_pressed_keys = (get_pressed_keys_t) loadDynamicSymbol(sfmlHandle, "get_pressed_keys");
+	clear_screen_t clear_screen = (clear_screen_t) loadDynamicSymbol(sfmlHandle, "clear_screen");
+	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(sfmlHandle, "set_square_color");
+	render_t render = (render_t) loadDynamicSymbol(sfmlHandle, "render");
 
 	init_nibbler(MAP_WIDTH, MAP_HEIGHT, 10, "Nibbler");
 	std::vector<int> alreadyPressedKeys;
@@ -258,7 +266,7 @@ int main()
 		if (currentFrameInSecond % (REFRESH_FPS / GAME_FPS) == 0)
 		{
 			// TODO gameTick function
-			std::cout << "Game tick" << std::endl;
+			// std::cout << "Game tick" << std::endl;
 			clear_screen();
 
 			// us temp variable vx / vy in case the user moves very fast eg. UP, RIGHT (while going left) between
@@ -305,6 +313,6 @@ int main()
 
 	// pthread_join(thread, NULL);
 
-	dlclose(handle);
+	dlclose(sfmlHandle);
 	return 1;
 }
