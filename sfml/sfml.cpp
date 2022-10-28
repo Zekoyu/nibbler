@@ -292,6 +292,47 @@ extern "C" {
 		window.display();
 	}
 
+	void show_game_over()
+	{
+		if (game == NULL)
+			return;
+
+		sf::RenderWindow &window = game->getWindow();
+		sf::Font font;
+		if (font.loadFromFile("./ComicNeueSansID.ttf"))
+		{
+			sf::Text text;
+			sf::Text subtext;
+			text.setFont(font);
+			text.setString("Game Over");
+			text.setCharacterSize(42);
+			// Ugly pink
+			text.setFillColor(sf::Color(255, 0, 255));
+			text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+
+			subtext.setFont(font);
+			subtext.setString("Press any movement key to retry");
+			subtext.setCharacterSize(24);
+			subtext.setFillColor(sf::Color(255, 0, 255));
+
+			// center on screen
+			sf::FloatRect textRect = text.getLocalBounds();
+			text.setOrigin(textRect.left + textRect.width / 2.0f,
+						   textRect.top + textRect.height / 2.0f);
+			text.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f));
+
+			sf::FloatRect subtextRect = subtext.getLocalBounds();
+			subtext.setOrigin(subtextRect.left + subtextRect.width / 2.0f,
+							  subtextRect.top + subtextRect.height / 2.0f);
+
+			subtext.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + textRect.height));
+
+			window.draw(text);
+			window.draw(subtext);
+			window.display();
+		}
+	}
+
 
 #ifdef __cplusplus
 }

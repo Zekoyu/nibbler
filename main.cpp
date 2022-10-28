@@ -18,6 +18,7 @@ typedef int (*get_pressed_keys_t)(int **keys, int *size);
 typedef void (*clear_screen_t)(void);
 typedef void (*set_square_color_t)(int x, int y, int r, int g, int b, int a);
 typedef void (*render_t)(void);
+typedef void (*show_game_over_t)(void);
 
 void *loadDynamicSymbol(void *handle, const char *symbol)
 {
@@ -25,7 +26,7 @@ void *loadDynamicSymbol(void *handle, const char *symbol)
 	if (func == NULL)
 	{
 		std::cout << "Error while loading symbol " << symbol << " : " << dlerror() << std::endl;
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	return func;
 }
@@ -149,6 +150,7 @@ int main()
 	clear_screen_t clear_screen = (clear_screen_t) loadDynamicSymbol(sfmlHandle, "clear_screen");
 	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(sfmlHandle, "set_square_color");
 	render_t render = (render_t) loadDynamicSymbol(sfmlHandle, "render");
+	show_game_over_t show_game_over = (show_game_over_t) loadDynamicSymbol(sfmlHandle, "show_game_over");
 
 	init_nibbler(MAP_WIDTH, MAP_HEIGHT, 10, "Nibbler");
 	std::vector<int> alreadyPressedKeys;
@@ -161,6 +163,7 @@ int main()
 
 	int vy = 0;
 	int vx = 1;
+	bool gameOver = false;
 
 	while (1)
 	{
@@ -191,7 +194,7 @@ int main()
 			{
 				case EXIT_KEY:
 					std::cout << "Exit\n";
-					exit(0);
+					exit(EXIT_SUCCESS);
 					break;
 
 				case UP_KEY:
@@ -259,6 +262,11 @@ int main()
 			keyIt = alreadyPressedKeys.erase(keyIt);
 		}
 
+		if (gameOver)
+		{
+			continue;
+		}
+
 		currentFrameInSecond++;
 		if (currentFrameInSecond == REFRESH_FPS)
 			currentFrameInSecond = 0;
@@ -279,8 +287,11 @@ int main()
 				|| snake.isSelfColliding())
 			{
 				std::cout << "Game over" << std::endl;
+				gameOver = true;
+				show_game_over();
+				continue;
 				// see https://github.com/microsoft/wslg/issues/445 for segfault, always do LIBGL_ALWAYS_SOFTWARE=1  ./nibbler  on WSL
-				exit(0);
+				// exit(0);
 			}
 
 			if (snake.getHeadX() == food.first && snake.getHeadY() == food.second)
