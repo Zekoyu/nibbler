@@ -4,72 +4,179 @@
 
 #include "../game_keycodes.hpp"
 
+template <typename T>
+class Grid
+{
+	private:
+		std::vector<T> _grid;
+		int _width, _height;
+
+	public:
+		Grid(int width, int height)
+			: _width(width), _height(height)
+		{
+			_grid = std::vector<T>(width * height);
+		}
+
+		T& operator()(int x, int y)
+		{
+			return _grid[y * _width + x];
+		}
+
+		int getWidth() const
+		{
+			return _width;
+		}
+
+		int getHeight() const
+		{
+			return _height;
+		}
+
+		void setWidth(int width)
+		{
+			_width = width;
+			_grid.resize(_width * _height);
+		}
+
+		void setHeight(int height)
+		{
+			_height = height;
+			_grid.resize(_width * _height);
+		}
+
+		void resize(int width, int height)
+		{
+			_width = width;
+			_height = height;
+			_grid.resize(_width * _height);
+		}
+
+		void clear()
+		{
+			_grid.clear();
+		}
+
+		void fill(T value)
+		{
+			std::fill(_grid.begin(), _grid.end(), value);
+		}
+
+};
 
 class Game
 {
 	private:
-		sf::RenderWindow window;
-		int width, height;
+		sf::RenderWindow _window;
+		int _width, _height;
+		int _squareSizePx;
+		Grid<sf::RectangleShape> _grid;
 
 	public:
 		Game(int width, int height, int squareSizePx, const std::string& windowTitle)
-			: width(width), height(height)
+			: _width(width), _height(height), _squareSizePx(squareSizePx), _grid(Grid<sf::RectangleShape>(width, height))
 		{
-			this->width = width;
-			this->height = height;
-			window.create(sf::VideoMode(width * squareSizePx, height * squareSizePx), windowTitle);
-			window.setVerticalSyncEnabled(true);
+			_window.create(sf::VideoMode(width * squareSizePx, height * squareSizePx), windowTitle);
+			_window.setVerticalSyncEnabled(true);
+			_grid.fill(sf::RectangleShape(sf::Vector2f(squareSizePx, squareSizePx)));
+			for (int y = 0; y < _grid.getHeight(); y++)
+			{
+				for (int x = 0; x < _grid.getWidth(); x++)
+				{
+					_grid(x, y).setPosition(x * squareSizePx, y * squareSizePx);
+					// std::cout << "Square position: " << _grid(x, y).getPosition().x << ", " << _grid(x, y).getPosition().y << std::endl;
+				}
+			}
 
 			// center window on screen
 			sf::VideoMode screenDimensionsMode = sf::VideoMode::getDesktopMode();
 			sf::Vector2i windowPosition = sf::Vector2i(
-				(screenDimensionsMode.width - window.getSize().x) / 2,
-				(screenDimensionsMode.height - window.getSize().y) / 2
+				(screenDimensionsMode.width - _window.getSize().x) / 2,
+				(screenDimensionsMode.height - _window.getSize().y) / 2
 			);
-			window.setPosition(windowPosition);
-
+			_window.setPosition(windowPosition);
 		}
 
 		void setSquareSizePx(int px)
 		{
-			window.setSize(sf::Vector2u(width * px, height * px));
+			_squareSizePx = px;
+			_window.setSize(sf::Vector2u(_width * px, _height * px));
+			for (int y = 0; y < _grid.getHeight(); y++)
+			{
+				for (int x = 0; x < _grid.getWidth(); x++)
+				{
+					_grid(x, y).setSize(sf::Vector2f(px, px));
+				}
+			}
 		}
 
-		void run()
+		void setSquareColor(int x, int y, sf::Color color)
 		{
-			sf::CircleShape shape(100.f);
-			shape.setFillColor(sf::Color::Green);
-			shape.setPosition(10, 10);
-			sf::Clock clock;
+			_grid(x, y).setFillColor(color);
+		}
 
-			while (window.isOpen())
+		void setSquaresBlack()
+		{
+			for (int y = 0; y < _grid.getHeight(); y++)
 			{
-				clock.restart();
-				sf::Event event;
-				while (window.pollEvent(event))
+				for (int x = 0; x < _grid.getWidth(); x++)
 				{
-					if (event.type == sf::Event::KeyPressed)
-					{
-						// if (event.key.code == sf::Keyboard::Escape)
-						// {
-						// 	std::cout << "Escape key pressed" << std::endl;
-						// 	window.close();
-						// }
-					}
-					if (event.type == sf::Event::Closed)
-						window.close();
+					_grid(x, y).setFillColor(sf::Color::Black);
 				}
+			}
+		}
 
-				window.clear();
-				window.draw(shape);
-				window.display();
-				// std::cout << "Render time: " << clock.getElapsedTime().asMilliseconds() << "ms" << std::endl;
+		// void run()
+		// {
+		// 	sf::CircleShape shape(100.f);
+		// 	shape.setFillColor(sf::Color::Green);
+		// 	shape.setPosition(10, 10);
+		// 	sf::Clock clock;
+
+		// 	while (window.isOpen())
+		// 	{
+		// 		clock.restart();
+		// 		sf::Event event;
+		// 		while (window.pollEvent(event))
+		// 		{
+		// 			if (event.type == sf::Event::KeyPressed)
+		// 			{
+		// 				// if (event.key.code == sf::Keyboard::Escape)
+		// 				// {
+		// 				// 	std::cout << "Escape key pressed" << std::endl;
+		// 				// 	window.close();
+		// 				// }
+		// 			}
+		// 			if (event.type == sf::Event::Closed)
+		// 				window.close();
+		// 		}
+
+		// 		window.clear();
+		// 		window.draw(shape);
+		// 		window.display();
+		// 		// std::cout << "Render time: " << clock.getElapsedTime().asMilliseconds() << "ms" << std::endl;
+		// 	}
+		// }
+
+		void drawGrid()
+		{
+			// _window.draw(_grid(0, 0));
+			for (int y = 0; y < _grid.getHeight(); y++)
+			{
+				for (int x = 0; x < _grid.getWidth(); x++)
+				{
+					sf::RectangleShape& square = _grid(x, y);
+					if (square.getFillColor() != sf::Color::Black && square.getFillColor().a != 0)
+					{
+						_window.draw(square);
+					}
+				}
 			}
 		}
 
 		sf::RenderWindow& getWindow()
 		{
-			return window;
+			return _window;
 		}
 };
 
@@ -134,6 +241,34 @@ extern "C" {
 			(*keys)[7] = THREE_KEY;
 
 		return 0;
+	}
+
+
+	void clear_screen()
+	{
+		if (game == NULL)
+			return;
+
+		game->setSquaresBlack();
+	}
+
+	void set_square_color(int x, int y, int r, int g, int b, int a)
+	{
+		if (game == NULL)
+			return;
+
+		game->setSquareColor(x, y, sf::Color(r, g, b, a));
+	}
+
+	void render()
+	{
+		if (game == NULL)
+			return;
+
+		sf::RenderWindow &window = game->getWindow();
+		window.clear();
+		game->drawGrid();
+		window.display();
 	}
 
 

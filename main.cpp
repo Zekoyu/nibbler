@@ -1,7 +1,6 @@
 #include <dlfcn.h>
 #include <iostream>
 #include <stdlib.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <chrono>
 #include <vector>
@@ -13,15 +12,9 @@
 
 typedef int (*init_nibbler_t)(int width, int height, int cell_size, const char *name);
 typedef int (*get_pressed_keys_t)(int **keys, int *size);
-
-void *thread_main(void *arg)
-{
-	std::cout << "Hello from thread" << std::endl;
-	init_nibbler_t init_nibbler = (init_nibbler_t) arg;
-	init_nibbler(60, 40, 10, "Nibbler");
-
-	return NULL;
-}
+typedef void (*clear_screen_t)(void);
+typedef void (*set_square_color_t)(int x, int y, int r, int g, int b, int a);
+typedef void (*render_t)(void);
 
 void *loadDynamicSymbol(void *handle, const char *symbol)
 {
@@ -47,17 +40,15 @@ int main()
 
 	init_nibbler_t init_nibbler = (init_nibbler_t) loadDynamicSymbol(handle, "init_nibbler");
 	get_pressed_keys_t get_pressed_keys = (get_pressed_keys_t) loadDynamicSymbol(handle, "get_pressed_keys");
-
-	// run init_nibbler in another thread
-	// pthread_t thread;
-	// if (pthread_create(&thread, NULL, thread_main, (void *) init_nibbler) != 0)
-	// {
-	// 	std::cerr << "pthread_create failed" << std::endl;
-	// 	exit(EXIT_FAILURE);
-	// }
+	clear_screen_t clear_screen = (clear_screen_t) loadDynamicSymbol(handle, "clear_screen");
+	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(handle, "set_square_color");
+	render_t render = (render_t) loadDynamicSymbol(handle, "render");
 
 	init_nibbler(60, 40, 10, "Nibbler");
 	std::vector<int> alreadyPressedKeys;
+
+	int x = 0;
+	int y = 0;
 
 	while (1)
 	{
@@ -88,6 +79,7 @@ int main()
 			{
 				case EXIT_KEY:
 					std::cout << "Exit\n";
+					exit(0);
 					break;
 
 				case UP_KEY:
@@ -134,6 +126,20 @@ int main()
 			keyIt = alreadyPressedKeys.erase(keyIt);
 		}
 
+		(void)clear_screen;
+		(void)set_square_color;
+		(void)render;
+		clear_screen();
+		set_square_color(x++, y, 255, 0, 0, 255);
+		if (x > 60)
+		{
+			x = 0;
+			y++;
+		}
+		if (y > 40)
+			y = 0;
+
+		render();
 
 		std::chrono::microseconds frameDuration;
 		do
@@ -143,7 +149,7 @@ int main()
 			usleep(500);
 		} while(frameDuration.count() < 1000 * 1000 / FPS);
 
-		// std::cout << "Frame took " << (frameDuration.count() / 1000) << "ms to run" << std::endl;
+		std::cout << "Frame took " << (frameDuration.count() / 1000) << "ms to run" << std::endl;
 	}
 
 
