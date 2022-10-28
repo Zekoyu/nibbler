@@ -8,7 +8,8 @@
 
 #include "./game_keycodes.hpp"
 
-#define FPS 60
+#define REFRESH_FPS 60
+#define GAME_FPS 10
 
 typedef int (*init_nibbler_t)(int width, int height, int cell_size, const char *name);
 typedef int (*get_pressed_keys_t)(int **keys, int *size);
@@ -49,6 +50,9 @@ int main()
 
 	int x = 0;
 	int y = 0;
+	int vx = 1;
+	int vy = 0;
+	int currentFrameInSecond = 0;
 
 	while (1)
 	{
@@ -83,18 +87,38 @@ int main()
 					break;
 
 				case UP_KEY:
+					if (vy != 1)
+					{
+						vx = 0;
+						vy = -1;
+					}
 					std::cout << "Go up\n";
 					break;
 
 				case DOWN_KEY:
+					if (vy != -1)
+					{
+						vx = 0;
+						vy = 1;
+					}
 					std::cout << "Go down\n";
 					break;
 
 				case LEFT_KEY:
+					if (vx != 1)
+					{
+						vx = -1;
+						vy = 0;
+					}
 					std::cout << "Go left\n";
 					break;
 
 				case RIGHT_KEY:
+					if (vx != -1)
+					{
+						vx = 1;
+						vy = 0;
+					}
 					std::cout << "Go right\n";
 					break;
 
@@ -126,20 +150,35 @@ int main()
 			keyIt = alreadyPressedKeys.erase(keyIt);
 		}
 
-		(void)clear_screen;
-		(void)set_square_color;
-		(void)render;
-		clear_screen();
-		set_square_color(x++, y, 255, 0, 0, 255);
-		if (x > 60)
-		{
-			x = 0;
-			y++;
-		}
-		if (y > 40)
-			y = 0;
+		currentFrameInSecond++;
+		if (currentFrameInSecond == REFRESH_FPS)
+			currentFrameInSecond = 0;
 
-		render();
+		if (currentFrameInSecond % GAME_FPS == 0)
+		{
+			// TODO gameTick function
+			std::cout << "Game tick" << std::endl;
+			(void)clear_screen;
+			(void)set_square_color;
+			(void)render;
+			clear_screen();
+
+			x += vx;
+			y += vy;
+
+			if (x < 0)
+				x = 59;
+			if (x > 59)
+				x = 0;
+			if (y < 0)
+				y = 39;
+			if (y > 39)
+				y = 0;
+
+			set_square_color(x, y, 255, 0, 0, 255);
+
+			render();
+		}
 
 		std::chrono::microseconds frameDuration;
 		do
@@ -147,9 +186,9 @@ int main()
 			auto now = std::chrono::high_resolution_clock::now();
 			frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(now - frameStartTime);
 			usleep(500);
-		} while(frameDuration.count() < 1000 * 1000 / FPS);
+		} while(frameDuration.count() < 1000 * 1000 / REFRESH_FPS);
 
-		std::cout << "Frame took " << (frameDuration.count() / 1000) << "ms to run" << std::endl;
+		// std::cout << "Frame took " << (frameDuration.count() / 1000) << "ms to run" << std::endl;
 	}
 
 
