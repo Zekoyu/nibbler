@@ -135,13 +135,13 @@ int main()
 	}
 	std::cout << "Successfully opened library libsfml.so" << std::endl;
 
-	void *portaudioHandle = dlopen("./portaudio/libportaudio.so", RTLD_LAZY);
-	if (!portaudioHandle)
-	{
-		std::cerr << "dlopen failed: " << dlerror() << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	std::cout << "Successfully opened library libportaudio.so" << std::endl;
+	// void *portaudioHandle = dlopen("./soloud/libsoloud.so", RTLD_LAZY);
+	// if (!portaudioHandle)
+	// {
+	// 	std::cerr << "dlopen failed: " << dlerror() << std::endl;
+	// 	exit(EXIT_FAILURE);
+	// }
+	// std::cout << "Successfully opened library libsoloud.so" << std::endl;
 
 
 	init_nibbler_t init_nibbler = (init_nibbler_t) loadDynamicSymbol(sfmlHandle, "init_nibbler");

@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <stdio.h>
+#include <SFML/Audio.hpp>
 
 #include "../game_keycodes.hpp"
 
@@ -192,7 +193,25 @@ extern "C" {
 		if (game != NULL)
 			return -1;
 
+		std::cout << "Initializing Nibbler" << std::endl;
+
 		game = new Game(width, height, cell_size, name);
+
+		sf::SoundBuffer buffer;
+		if (buffer.loadFromFile("./test.wav"))
+		{
+			std::cout << "Loaded sound" << std::endl;
+			sf::Sound sound;
+			sound.setBuffer(buffer);
+			std::cout << "Sound duration: " << sound.getPlayingOffset().asSeconds() << std::endl;
+			sound.play();
+		}
+		else
+		{
+			std::cout << "Failed to load sound" << std::endl;
+		}
+
+		std::cout << "Successfully initialized Nibbler" << std::endl;
 
 		return 0;
 	}
@@ -232,7 +251,9 @@ extern "C" {
 			(*keys)[4] = RIGHT_KEY;
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) || sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad1))
+		{
 			(*keys)[5] = ONE_KEY;
+		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) || sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad2))
 			(*keys)[6] = TWO_KEY;
