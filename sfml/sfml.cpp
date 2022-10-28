@@ -1,69 +1,10 @@
 #include <SFML/Graphics.hpp>
-#include <iostream>
-#include <stdio.h>
 #include <SFML/Audio.hpp>
+#include <iostream>
 
 #include "../game_keycodes.hpp"
-
-template <typename T>
-class Grid
-{
-	private:
-		std::vector<T> _grid;
-		int _width, _height;
-
-	public:
-		Grid(int width, int height)
-			: _width(width), _height(height)
-		{
-			_grid = std::vector<T>(width * height);
-		}
-
-		T& operator()(int x, int y)
-		{
-			return _grid[y * _width + x];
-		}
-
-		int getWidth() const
-		{
-			return _width;
-		}
-
-		int getHeight() const
-		{
-			return _height;
-		}
-
-		void setWidth(int width)
-		{
-			_width = width;
-			_grid.resize(_width * _height);
-		}
-
-		void setHeight(int height)
-		{
-			_height = height;
-			_grid.resize(_width * _height);
-		}
-
-		void resize(int width, int height)
-		{
-			_width = width;
-			_height = height;
-			_grid.resize(_width * _height);
-		}
-
-		void clear()
-		{
-			_grid.clear();
-		}
-
-		void fill(T value)
-		{
-			std::fill(_grid.begin(), _grid.end(), value);
-		}
-
-};
+#include "../game_functions.hpp"
+#include "../Grid.hpp"
 
 class Game
 {
@@ -127,38 +68,6 @@ class Game
 			}
 		}
 
-		// void run()
-		// {
-		// 	sf::CircleShape shape(100.f);
-		// 	shape.setFillColor(sf::Color::Green);
-		// 	shape.setPosition(10, 10);
-		// 	sf::Clock clock;
-
-		// 	while (window.isOpen())
-		// 	{
-		// 		clock.restart();
-		// 		sf::Event event;
-		// 		while (window.pollEvent(event))
-		// 		{
-		// 			if (event.type == sf::Event::KeyPressed)
-		// 			{
-		// 				// if (event.key.code == sf::Keyboard::Escape)
-		// 				// {
-		// 				// 	std::cout << "Escape key pressed" << std::endl;
-		// 				// 	window.close();
-		// 				// }
-		// 			}
-		// 			if (event.type == sf::Event::Closed)
-		// 				window.close();
-		// 		}
-
-		// 		window.clear();
-		// 		window.draw(shape);
-		// 		window.display();
-		// 		// std::cout << "Render time: " << clock.getElapsedTime().asMilliseconds() << "ms" << std::endl;
-		// 	}
-		// }
-
 		void drawGrid()
 		{
 			// _window.draw(_grid(0, 0));
@@ -183,33 +92,32 @@ class Game
 
 Game *game = NULL;
 
-
 // https://stackoverflow.com/questions/20737987/extern-c-when-exactly-to-use
 #ifdef __cplusplus
 extern "C" {
 #endif
-	int init_nibbler(int width, int height, int cell_size, const char *name)
+	int init_nibbler(int width, int height, int cell_size, const char *window_name)
 	{
 		if (game != NULL)
 			return -1;
 
 		std::cout << "Initializing Nibbler" << std::endl;
 
-		game = new Game(width, height, cell_size, name);
+		game = new Game(width, height, cell_size, window_name);
 
-		sf::SoundBuffer buffer;
-		if (buffer.loadFromFile("./test.wav"))
-		{
-			std::cout << "Loaded sound" << std::endl;
-			sf::Sound sound;
-			sound.setBuffer(buffer);
-			std::cout << "Sound duration: " << sound.getPlayingOffset().asSeconds() << std::endl;
-			sound.play();
-		}
-		else
-		{
-			std::cout << "Failed to load sound" << std::endl;
-		}
+		// sf::SoundBuffer buffer;
+		// if (buffer.loadFromFile("./test.wav"))
+		// {
+		// 	std::cout << "Loaded sound" << std::endl;
+		// 	sf::Sound sound;
+		// 	sound.setBuffer(buffer);
+		// 	std::cout << "Sound duration: " << sound.getPlayingOffset().asSeconds() << std::endl;
+		// 	sound.play();
+		// }
+		// else
+		// {
+		// 	std::cout << "Failed to load sound" << std::endl;
+		// }
 
 		std::cout << "Successfully initialized Nibbler" << std::endl;
 
@@ -273,12 +181,12 @@ extern "C" {
 		game->setSquaresBlack();
 	}
 
-	void set_square_color(int x, int y, int r, int g, int b, int a)
+	void set_square_color(int x, int y, int r, int g, int b)
 	{
 		if (game == NULL)
 			return;
 
-		game->setSquareColor(x, y, sf::Color(r, g, b, a));
+		game->setSquareColor(x, y, sf::Color(r, g, b));
 	}
 
 	void render()
@@ -308,7 +216,7 @@ extern "C" {
 			text.setCharacterSize(42);
 			// Ugly pink
 			text.setFillColor(sf::Color(255, 0, 255));
-			text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+			text.setStyle(sf::Text::Bold);
 
 			subtext.setFont(font);
 			subtext.setString("Press any movement key to retry");

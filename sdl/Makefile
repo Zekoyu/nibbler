@@ -1,8 +1,8 @@
 CC = g++
 CPPFLAGS = -Wall -Wextra -Werror -fPIC -O3
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+LDFLAGS = -lSDL2
 
-NAME = libnibbler_sfml.so
+NAME = libnibbler_sdl.so
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)

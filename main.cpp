@@ -7,18 +7,13 @@
 #include <algorithm>
 
 #include "./game_keycodes.hpp"
+#include "./game_functions.hpp"
 
 #define REFRESH_FPS 60
 #define GAME_FPS 20
 #define MAP_WIDTH 60
 #define MAP_HEIGHT 40
 
-typedef int (*init_nibbler_t)(int width, int height, int cell_size, const char *name);
-typedef int (*get_pressed_keys_t)(int **keys, int *size);
-typedef void (*clear_screen_t)(void);
-typedef void (*set_square_color_t)(int x, int y, int r, int g, int b, int a);
-typedef void (*render_t)(void);
-typedef void (*show_game_over_t)(void);
 
 void *loadDynamicSymbol(void *handle, const char *symbol)
 {
@@ -29,6 +24,19 @@ void *loadDynamicSymbol(void *handle, const char *symbol)
 		exit(EXIT_FAILURE);
 	}
 	return func;
+}
+
+void *dlOpenOrExit(const char *path)
+{
+	void *handle = dlopen(path, RTLD_LAZY);
+	if (handle == NULL)
+	{
+		std::cout << "Error while loading " << path << " : " << dlerror() << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	std::cout << "Successfully loaded " << path << std::endl;
+	return handle;
 }
 
 class Snake
@@ -128,13 +136,8 @@ std::pair<int, int> &generateFood(std::pair<int, int> &food, std::vector<std::pa
 
 int main()
 {
-	void *sfmlHandle = dlopen("./sfml/libsfml.so", RTLD_LAZY);
-	if (!sfmlHandle)
-	{
-		std::cerr << "dlopen failed: " << dlerror() << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	std::cout << "Successfully opened library libsfml.so" << std::endl;
+	void *sfmlHandle = dlOpenOrExit("./sfml/libnibbler_sfml.so");
+	// void *sdlHandle = dlOpenOrExit("./sdl/libnibbler_sdl.so");
 
 	// void *portaudioHandle = dlopen("./soloud/libsoloud.so", RTLD_LAZY);
 	// if (!portaudioHandle)
@@ -303,9 +306,12 @@ int main()
 			snakeBody = snake.getBody();
 			for (std::pair<int, int> &bodyPart : snakeBody)
 			{
-				set_square_color(bodyPart.first, bodyPart.second, 0, 255, 0, 255);
+				set_square_color(bodyPart.first, bodyPart.second, 0, 255, 0);
 			}
-			set_square_color(food.first, food.second, 255, 0, 0, 255);
+			set_square_color(snakeBody.back().first, snakeBody.back().second, 128, 255, 0);
+			set_square_color(snake.getHeadX(), snake.getHeadY(), 0, 128, 0);
+
+			set_square_color(food.first, food.second, 255, 0, 0);
 
 			render();
 		}
