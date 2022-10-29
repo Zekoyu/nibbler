@@ -9,4 +9,5 @@ cd raylib
 git clone https://github.com/raysan5/raylib.git raylib
 cd raylib/src
 make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED
-ln -sf `pwd`/libraylib.so ../../libnibbler_raylib.so
+sudo make install RAYLIB_LIBTYPE=SHARED
+cd ../../

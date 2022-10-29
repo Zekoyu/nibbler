@@ -171,7 +171,8 @@ void switchLibrary(const char *newLibPath, t_nibbler_dynamic_library &lib)
 int main()
 {
 	std::vector<std::pair<const char *, const char *>> libs = { {"./sdl/libnibbler_sdl.so", "SDL2"},
-									  							{"./sfml/libnibbler_sfml.so", "SFML"} };
+									  							{"./sfml/libnibbler_sfml.so", "SFML"},
+																{"./raylib/libnibbler_raylib.so", "Raylib"} };
 
 	t_nibbler_dynamic_library lib;
 	srand(time(NULL));
@@ -333,17 +334,14 @@ int main()
 			keyIt = alreadyPressedKeys.erase(keyIt);
 		}
 
-		if (gameOver)
-		{
-			continue;
-		}
-
 		currentFrameInSecond++;
 		if (currentFrameInSecond == REFRESH_FPS)
 			currentFrameInSecond = 0;
 
 		if (currentFrameInSecond % (REFRESH_FPS / GAME_FPS) == 0)
 		{
+			if (gameOver)
+				continue;
 			// TODO gameTick function
 			// std::cout << "Game tick" << std::endl;
 			lib.clear_screen();

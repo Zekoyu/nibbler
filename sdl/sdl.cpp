@@ -227,20 +227,6 @@ extern "C" {
 
 		game = new Game(width, height, cell_size, window_name);
 
-		// sf::SoundBuffer buffer;
-		// if (buffer.loadFromFile("./test.wav"))
-		// {
-		// 	std::cout << "Loaded sound" << std::endl;
-		// 	sf::Sound sound;
-		// 	sound.setBuffer(buffer);
-		// 	std::cout << "Sound duration: " << sound.getPlayingOffset().asSeconds() << std::endl;
-		// 	sound.play();
-		// }
-		// else
-		// {
-		// 	std::cout << "Failed to load sound" << std::endl;
-		// }
-
 		std::cout << "Successfully initialized Nibbler" << std::endl;
 
 		return 0;
