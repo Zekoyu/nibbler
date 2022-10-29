@@ -3,19 +3,18 @@
 
 #include "../game_keycodes.hpp"
 #include "../game_functions.hpp"
-#include "../Grid.hpp"
+// #include "../Grid.hpp"
+#include "../IGame.hpp"
 
-class Game
-{
-	private:
-		int _width, _height;
-		int _squareSizePx;
-		Grid<SDL_Rect> _grid;
-
-	public:
-}
+// class Game: public IGame
+// {
+// 	Game(int width, int height, in)
+// }
 
 int main() {
+
+	// IGame<int> test;
+
 	return 0;
 }
 // https://www.parallelrealities.co.uk/tutorials/shooter/shooter1.php

@@ -1,3 +1,5 @@
+#include <vector>
+
 template <typename T>
 class Grid
 {
@@ -25,7 +27,7 @@ class Grid
 		{
 		}
 
-		Grid& operator=(const Grid& other)
+		Grid &operator=(const Grid &other)
 		{
 			_width = other._width;
 			_height = other._height;

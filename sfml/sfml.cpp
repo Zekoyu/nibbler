@@ -4,31 +4,24 @@
 
 #include "../game_keycodes.hpp"
 #include "../game_functions.hpp"
-#include "../Grid.hpp"
+#include "../IGame.hpp"
 
-class Game
+class Game : public IGame<sf::RectangleShape>
 {
 	private:
 		sf::RenderWindow _window;
-		int _width, _height;
-		int _squareSizePx;
-		Grid<sf::RectangleShape> _grid;
 
 	public:
-		Game(int width, int height, int squareSizePx, const std::string& windowTitle)
-			: _width(width), _height(height), _squareSizePx(squareSizePx), _grid(Grid<sf::RectangleShape>(width, height))
+		Game(int width, int height, int squareSizePx, const std::string &windowTitle)
+			: IGame(width, height, squareSizePx)
 		{
 			_window.create(sf::VideoMode(width * squareSizePx, height * squareSizePx), windowTitle);
 			_window.setVerticalSyncEnabled(true);
 			_grid.fill(sf::RectangleShape(sf::Vector2f(squareSizePx, squareSizePx)));
+
 			for (int y = 0; y < _grid.getHeight(); y++)
-			{
 				for (int x = 0; x < _grid.getWidth(); x++)
-				{
 					_grid(x, y).setPosition(x * squareSizePx, y * squareSizePx);
-					// std::cout << "Square position: " << _grid(x, y).getPosition().x << ", " << _grid(x, y).getPosition().y << std::endl;
-				}
-			}
 
 			// center window on screen
 			sf::VideoMode screenDimensionsMode = sf::VideoMode::getDesktopMode();
@@ -39,38 +32,49 @@ class Game
 			_window.setPosition(windowPosition);
 		}
 
-		void setSquareSizePx(int px)
+		// https://stackoverflow.com/questions/308276/can-i-call-a-constructor-from-another-constructor-do-constructor-chaining-in-c
+		Game() : Game(4, 4, 10, "Hmmmmmm")
+		{
+		}
+
+		~Game()
+		{
+		}
+
+		Game(const Game &other)
+			: IGame(other)
+		{
+		}
+
+		Game &operator=(const Game &other)
+		{
+			IGame::operator=(other);
+			return *this;
+		}
+
+		void setSquareSizePx(int px) override
 		{
 			_squareSizePx = px;
 			_window.setSize(sf::Vector2u(_width * px, _height * px));
 			for (int y = 0; y < _grid.getHeight(); y++)
-			{
 				for (int x = 0; x < _grid.getWidth(); x++)
-				{
 					_grid(x, y).setSize(sf::Vector2f(px, px));
-				}
-			}
 		}
 
-		void setSquareColor(int x, int y, sf::Color color)
+		void setSquareColor(int x, int y, int r, int g, int b)
 		{
-			_grid(x, y).setFillColor(color);
+			_grid(x, y).setFillColor(sf::Color(r, g, b));
 		}
 
 		void setSquaresBlack()
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
-			{
 				for (int x = 0; x < _grid.getWidth(); x++)
-				{
-					_grid(x, y).setFillColor(sf::Color::Black);
-				}
-			}
+					setSquareColor(x, y, 0, 0, 0);
 		}
 
 		void drawGrid()
 		{
-			// _window.draw(_grid(0, 0));
 			for (int y = 0; y < _grid.getHeight(); y++)
 			{
 				for (int x = 0; x < _grid.getWidth(); x++)
@@ -84,9 +88,58 @@ class Game
 			}
 		}
 
-		sf::RenderWindow& getWindow()
+		void render()
 		{
-			return _window;
+			_window.clear();
+			drawGrid();
+			_window.display();
+		}
+
+		void showGameOver()
+		{
+			sf::Font font;
+			if (font.loadFromFile("./ComicNeueSansID.ttf"))
+			{
+				sf::Text text;
+				sf::Text subtext;
+				text.setFont(font);
+				text.setString("Game Over");
+				text.setCharacterSize(42);
+				// Ugly pink
+				text.setFillColor(sf::Color(255, 0, 255));
+				text.setStyle(sf::Text::Bold);
+
+				subtext.setFont(font);
+				subtext.setString("Press any movement key to retry");
+				subtext.setCharacterSize(24);
+				subtext.setFillColor(sf::Color(255, 0, 255));
+
+				// center on screen
+				sf::FloatRect textRect = text.getLocalBounds();
+				text.setOrigin(textRect.left + textRect.width / 2.0f,
+							textRect.top + textRect.height / 2.0f);
+				text.setPosition(sf::Vector2f(_window.getSize().x / 2.0f, _window.getSize().y / 2.0f));
+
+				sf::FloatRect subtextRect = subtext.getLocalBounds();
+				subtext.setOrigin(subtextRect.left + subtextRect.width / 2.0f,
+								subtextRect.top + subtextRect.height / 2.0f);
+
+				subtext.setPosition(sf::Vector2f(_window.getSize().x / 2.0f, _window.getSize().y / 2.0f + textRect.height));
+
+				_window.draw(text);
+				_window.draw(subtext);
+				_window.display();
+			}
+		}
+
+		bool pollEvent(sf::Event &event)
+		{
+			return _window.pollEvent(event);
+		}
+
+		bool isKeyPressed(sf::Keyboard::Key key)
+		{
+			return sf::Keyboard::isKeyPressed(key);
 		}
 };
 
@@ -135,38 +188,35 @@ extern "C" {
 		*keys = (int *)calloc(sizeof(int), max_keys_count);
 		*size = max_keys_count;
 
-		sf::RenderWindow &window = game->getWindow();
 		sf::Event event;
-		while (window.pollEvent(event))
+		while (game->pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
 				(*keys)[0] = EXIT_KEY;
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+		if (game->isKeyPressed(sf::Keyboard::Escape))
 			(*keys)[0] = EXIT_KEY;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+		if (game->isKeyPressed(sf::Keyboard::Up) || game->isKeyPressed(sf::Keyboard::W))
 			(*keys)[1] = UP_KEY;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		if (game->isKeyPressed(sf::Keyboard::Down) || game->isKeyPressed(sf::Keyboard::S))
 			(*keys)[2] = DOWN_KEY;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		if (game->isKeyPressed(sf::Keyboard::Left) || game->isKeyPressed(sf::Keyboard::A))
 			(*keys)[3] = LEFT_KEY;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		if (game->isKeyPressed(sf::Keyboard::Right) || game->isKeyPressed(sf::Keyboard::D))
 			(*keys)[4] = RIGHT_KEY;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) || sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad1))
-		{
+		if (game->isKeyPressed(sf::Keyboard::Num1) || game->isKeyPressed(sf::Keyboard::Numpad1))
 			(*keys)[5] = ONE_KEY;
-		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) || sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad2))
+		if (game->isKeyPressed(sf::Keyboard::Num2) || game->isKeyPressed(sf::Keyboard::Numpad2))
 			(*keys)[6] = TWO_KEY;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3) || sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad3))
+		if (game->isKeyPressed(sf::Keyboard::Num3) || game->isKeyPressed(sf::Keyboard::Numpad3))
 			(*keys)[7] = THREE_KEY;
 
 		return 0;
@@ -186,7 +236,7 @@ extern "C" {
 		if (game == NULL)
 			return;
 
-		game->setSquareColor(x, y, sf::Color(r, g, b));
+		game->setSquareColor(x, y, r, g, b);
 	}
 
 	void render()
@@ -194,10 +244,7 @@ extern "C" {
 		if (game == NULL)
 			return;
 
-		sf::RenderWindow &window = game->getWindow();
-		window.clear();
-		game->drawGrid();
-		window.display();
+		game->render();
 	}
 
 	void show_game_over()
@@ -205,40 +252,7 @@ extern "C" {
 		if (game == NULL)
 			return;
 
-		sf::RenderWindow &window = game->getWindow();
-		sf::Font font;
-		if (font.loadFromFile("./ComicNeueSansID.ttf"))
-		{
-			sf::Text text;
-			sf::Text subtext;
-			text.setFont(font);
-			text.setString("Game Over");
-			text.setCharacterSize(42);
-			// Ugly pink
-			text.setFillColor(sf::Color(255, 0, 255));
-			text.setStyle(sf::Text::Bold);
-
-			subtext.setFont(font);
-			subtext.setString("Press any movement key to retry");
-			subtext.setCharacterSize(24);
-			subtext.setFillColor(sf::Color(255, 0, 255));
-
-			// center on screen
-			sf::FloatRect textRect = text.getLocalBounds();
-			text.setOrigin(textRect.left + textRect.width / 2.0f,
-						   textRect.top + textRect.height / 2.0f);
-			text.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f));
-
-			sf::FloatRect subtextRect = subtext.getLocalBounds();
-			subtext.setOrigin(subtextRect.left + subtextRect.width / 2.0f,
-							  subtextRect.top + subtextRect.height / 2.0f);
-
-			subtext.setPosition(sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f + textRect.height));
-
-			window.draw(text);
-			window.draw(subtext);
-			window.display();
-		}
+		game->showGameOver();
 	}
 
 

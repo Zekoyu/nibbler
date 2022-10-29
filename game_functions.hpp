@@ -1,9 +1,9 @@
-int init_nibbler(int width, int height, int cell_size, const char *window_name);
-int get_pressed_keys(int **keys, int *size);
-void clear_screen();
-void set_square_color(int x, int y, int r, int g, int b);
-void render();
-void show_game_over();
+// int init_nibbler(int width, int height, int cell_size, const char *window_name);
+// int get_pressed_keys(int **keys, int *size);
+// void clear_screen();
+// void set_square_color(int x, int y, int r, int g, int b);
+// void render();
+// void show_game_over();
 
 typedef int (*init_nibbler_t)(int width, int height, int cell_size, const char *window_name);
 typedef int (*get_pressed_keys_t)(int **keys, int *size);
