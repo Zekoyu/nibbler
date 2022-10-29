@@ -5,6 +5,8 @@
 #include <chrono>
 #include <vector>
 #include <algorithm>
+#include <random>
+#include <map>
 
 #include "./game_keycodes.hpp"
 #include "./game_functions.hpp"
@@ -13,7 +15,20 @@
 #define GAME_FPS 20
 #define MAP_WIDTH 60
 #define MAP_HEIGHT 40
+#define SQUARE_SIZE_PX 10
 
+typedef struct s_nibbler_dynamic_library
+{
+	void *handle;
+	init_nibbler_t init_nibbler;
+	get_pressed_keys_t get_pressed_keys;
+	clear_screen_t clear_screen;
+	set_square_color_t set_square_color;
+	render_t render;
+	show_game_over_t show_game_over;
+	exit_nibbler_t exit_nibbler;
+
+} t_nibbler_dynamic_library;
 
 void *loadDynamicSymbol(void *handle, const char *symbol)
 {
@@ -37,6 +52,18 @@ void *dlOpenOrExit(const char *path)
 
 	std::cout << "Successfully loaded " << path << std::endl;
 	return handle;
+}
+
+void openNibblerDynamicLibraryOrExit(const char *path, t_nibbler_dynamic_library &lib)
+{
+	lib.handle = dlOpenOrExit(path);
+	lib.init_nibbler = (init_nibbler_t)loadDynamicSymbol(lib.handle, "init_nibbler");
+	lib.get_pressed_keys = (get_pressed_keys_t)loadDynamicSymbol(lib.handle, "get_pressed_keys");
+	lib.clear_screen = (clear_screen_t)loadDynamicSymbol(lib.handle, "clear_screen");
+	lib.set_square_color = (set_square_color_t)loadDynamicSymbol(lib.handle, "set_square_color");
+	lib.render = (render_t)loadDynamicSymbol(lib.handle, "render");
+	lib.show_game_over = (show_game_over_t)loadDynamicSymbol(lib.handle, "show_game_over");
+	lib.exit_nibbler = (exit_nibbler_t)loadDynamicSymbol(lib.handle, "exit_nibbler");
 }
 
 class Snake
@@ -134,22 +161,27 @@ std::pair<int, int> &generateFood(std::pair<int, int> &food, std::vector<std::pa
 	return food;
 }
 
+void switchLibrary(const char *newLibPath, t_nibbler_dynamic_library &lib)
+{
+	lib.exit_nibbler();
+	dlclose(lib.handle);
+	openNibblerDynamicLibraryOrExit(newLibPath, lib);
+}
+
 int main()
 {
-	void *sfmlHandle = dlOpenOrExit("./sdl/libnibbler_sdl.so");
+	std::vector<std::pair<const char *, const char *>> libs = { {"./sdl/libnibbler_sdl.so", "SDL2"},
+									  							{"./sfml/libnibbler_sfml.so", "SFML"} };
 
-	init_nibbler_t init_nibbler = (init_nibbler_t) loadDynamicSymbol(sfmlHandle, "init_nibbler");
-	get_pressed_keys_t get_pressed_keys = (get_pressed_keys_t) loadDynamicSymbol(sfmlHandle, "get_pressed_keys");
-	clear_screen_t clear_screen = (clear_screen_t) loadDynamicSymbol(sfmlHandle, "clear_screen");
-	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(sfmlHandle, "set_square_color");
-	render_t render = (render_t) loadDynamicSymbol(sfmlHandle, "render");
-	show_game_over_t show_game_over = (show_game_over_t) loadDynamicSymbol(sfmlHandle, "show_game_over");
-	exit_nibbler_t exit_nibbler = (exit_nibbler_t) loadDynamicSymbol(sfmlHandle, "exit_nibbler");
+	t_nibbler_dynamic_library lib;
+	srand(time(NULL));
 
-	init_nibbler(MAP_WIDTH, MAP_HEIGHT, 10, "Nibbler");
+	int libIndex = rand() % libs.size();
+
+	openNibblerDynamicLibraryOrExit(libs[libIndex].first, lib);
+	lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[libIndex].second).c_str());
+
 	std::vector<int> alreadyPressedKeys;
-
-
 	int currentFrameInSecond = 0;
 	Snake snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
 	auto snakeBody = snake.getBody();
@@ -159,6 +191,7 @@ int main()
 	int vx = 1;
 	bool gameOver = false;
 
+	game_loop:
 	while (1)
 	{
 		auto frameStartTime = std::chrono::high_resolution_clock::now();
@@ -166,7 +199,7 @@ int main()
 		std::vector<int> pressedKeys;
 		int *keys = NULL;
 		int size = 0;
-		get_pressed_keys(&keys, &size);
+		lib.get_pressed_keys(&keys, &size);
 		for (int i = 0; i < size; i++)
 		{
 			if (keys[i] == NONE_KEY)
@@ -182,13 +215,14 @@ int main()
 				continue;
 
 			alreadyPressedKeys.push_back(key);
+			bool pressedMovementKey = false;
 
 			// Manage newly pressed key logic
 			switch(key)
 			{
 				case EXIT_KEY:
 					std::cout << "Exit\n";
-					exit_nibbler();
+					lib.exit_nibbler();
 					exit(EXIT_SUCCESS);
 					break;
 
@@ -199,6 +233,7 @@ int main()
 						vy = -1;
 						vx = 0;
 					}
+					pressedMovementKey = true;
 					std::cout << "Go up\n";
 					break;
 
@@ -208,6 +243,7 @@ int main()
 						vy = 1;
 						vx = 0;
 					}
+					pressedMovementKey = true;
 					std::cout << "Go down\n";
 					break;
 
@@ -217,6 +253,7 @@ int main()
 						vy = 0;
 						vx = -1;
 					}
+					pressedMovementKey = true;
 					std::cout << "Go left\n";
 					break;
 
@@ -226,20 +263,60 @@ int main()
 						vy = 0;
 						vx = 1;
 					}
+					pressedMovementKey = true;
 					std::cout << "Go right\n";
 					break;
 
 				case ONE_KEY:
 					std::cout << "Switch to lib #1\n";
+					if (libs.size() < 1 || libIndex == 0)
+						break;
+
+					libIndex = 0;
+					switchLibrary(libs[0].first, lib);
+					gameOver = false;
+					lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[0].second).c_str());
+					goto game_loop;
+
 					break;
 
 				case TWO_KEY:
 					std::cout << "Switch to lib #2\n";
+					if (libs.size() < 2 || libIndex == 1)
+						break;
+
+					libIndex = 1;
+					switchLibrary(libs[1].first, lib);
+					gameOver = false;
+					lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[1].second).c_str());
+					goto game_loop;
+
 					break;
 
 				case THREE_KEY:
 					std::cout << "Switch to lib #3\n";
+					if (libs.size() < 3 || libIndex == 2)
+						break;
+
+					libIndex = 2;
+					switchLibrary(libs[2].first, lib);
+					gameOver = false;
+					lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[2].second).c_str());
+					goto game_loop;
+
 					break;
+			}
+
+			if (pressedMovementKey && gameOver)
+			{
+				std::cout << "Restart\n";
+				gameOver = false;
+				snake = Snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
+				vx = 1;
+				vy = 0;
+				snake.setDirection(1, 0);
+				snakeBody = snake.getBody();
+				food = generateFood(food, snakeBody);
 			}
 		}
 
@@ -270,7 +347,7 @@ int main()
 		{
 			// TODO gameTick function
 			// std::cout << "Game tick" << std::endl;
-			clear_screen();
+			lib.clear_screen();
 
 			// us temp variable vx / vy in case the user moves very fast eg. UP, RIGHT (while going left) between
 			// game ticks they cannot make a 180° turn
@@ -283,7 +360,7 @@ int main()
 			{
 				std::cout << "Game over" << std::endl;
 				gameOver = true;
-				show_game_over();
+				lib.show_game_over();
 				continue;
 				// see https://github.com/microsoft/wslg/issues/445 for segfault, always do LIBGL_ALWAYS_SOFTWARE=1  ./nibbler  on WSL
 				// exit(0);
@@ -297,15 +374,15 @@ int main()
 
 			snakeBody = snake.getBody();
 			for (std::pair<int, int> &bodyPart : snakeBody)
-			{
-				set_square_color(bodyPart.first, bodyPart.second, 0, 255, 0);
-			}
-			set_square_color(snakeBody.back().first, snakeBody.back().second, 128, 255, 0);
-			set_square_color(snake.getHeadX(), snake.getHeadY(), 0, 128, 0);
+				lib.set_square_color(bodyPart.first, bodyPart.second, 0, 255, 0);
 
-			set_square_color(food.first, food.second, 255, 0, 0);
 
-			render();
+			lib.set_square_color(snakeBody.back().first, snakeBody.back().second, 128, 255, 0);
+			lib.set_square_color(snake.getHeadX(), snake.getHeadY(), 0, 128, 0);
+
+			lib.set_square_color(food.first, food.second, 255, 0, 0);
+
+			lib.render();
 		}
 
 		std::chrono::microseconds frameDuration;
@@ -321,7 +398,6 @@ int main()
 
 
 	// pthread_join(thread, NULL);
-
-	dlclose(sfmlHandle);
+	dlclose(lib.handle);
 	return 1;
 }
