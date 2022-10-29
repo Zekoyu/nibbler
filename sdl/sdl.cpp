@@ -155,7 +155,7 @@ class Game : public IGame<SDLColoredSquare>
 			TTF_SetFontStyle(font, TTF_STYLE_BOLD);
 			SDL_Color color = {255, 0, 255, 255};
 			SDL_Surface *surfaceText = TTF_RenderText_Blended(font, "Game Over", color);
-			SDL_Surface *surfaceSubText = TTF_RenderText_Blended(subfont, "Press any key to restart", color);
+			SDL_Surface *surfaceSubText = TTF_RenderText_Blended(subfont, "Press the space key to restart", color);
 			if (surfaceText == nullptr || surfaceSubText == nullptr)
 			{
 				std::cerr << "TTF_RenderText_Blended Error: " << TTF_GetError() << std::endl;
@@ -253,7 +253,7 @@ extern "C" {
 
 		// At most 5 keys (esc, up, down, left, right)
 		// Just malloc 5 and set size to 5 (called must check NONE_KEY) for simplicity
-		int max_keys_count = 8;
+		int max_keys_count = 9;
 		*keys = (int *)calloc(sizeof(int), max_keys_count);
 		*size = max_keys_count;
 
@@ -288,6 +288,9 @@ extern "C" {
 
 		if (game->isKeyPressed(SDLK_3) || game->isKeyPressed(SDLK_KP_3))
 			(*keys)[7] = THREE_KEY;
+
+		if (game->isKeyPressed(SDLK_SPACE))
+			(*keys)[8] = SPACE_KEY;
 
 		return 0;
 	}

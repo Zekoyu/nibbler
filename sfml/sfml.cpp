@@ -113,7 +113,7 @@ class Game : public IGame<sf::RectangleShape>
 				text.setStyle(sf::Text::Bold);
 
 				subtext.setFont(font);
-				subtext.setString("Press any movement key to retry");
+				subtext.setString("Press the space key to retry");
 				subtext.setCharacterSize(24);
 				subtext.setFillColor(sf::Color(255, 0, 255));
 
@@ -192,7 +192,7 @@ extern "C" {
 
 		// At most 5 keys (esc, up, down, left, right)
 		// Just malloc 5 and set size to 5 (called must check NONE_KEY) for simplicity
-		int max_keys_count = 8;
+		int max_keys_count = 9;
 		*keys = (int *)calloc(sizeof(int), max_keys_count);
 		*size = max_keys_count;
 
@@ -226,6 +226,9 @@ extern "C" {
 
 		if (game->isKeyPressed(sf::Keyboard::Num3) || game->isKeyPressed(sf::Keyboard::Numpad3))
 			(*keys)[7] = THREE_KEY;
+
+		if (game->isKeyPressed(sf::Keyboard::Space))
+			(*keys)[8] = SPACE_KEY;
 
 		return 0;
 	}

@@ -4,3 +4,4 @@
 *.vscode
 *.dSYM
 test
+raylib/raylib/*

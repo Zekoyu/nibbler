@@ -11,8 +11,8 @@
 #include "./game_keycodes.hpp"
 #include "./game_functions.hpp"
 
-#define REFRESH_FPS 60
-#define GAME_FPS 20
+#define REFRESH_FPS 60 // To handle inputs
+#define GAME_FPS 20 // Game ticks per second (should not be lower then REFRESH_FPS)
 #define MAP_WIDTH 60
 #define MAP_HEIGHT 40
 #define SQUARE_SIZE_PX 10
@@ -215,7 +215,6 @@ int main()
 				continue;
 
 			alreadyPressedKeys.push_back(key);
-			bool pressedMovementKey = false;
 
 			// Manage newly pressed key logic
 			switch(key)
@@ -233,7 +232,6 @@ int main()
 						vy = -1;
 						vx = 0;
 					}
-					pressedMovementKey = true;
 					std::cout << "Go up\n";
 					break;
 
@@ -243,7 +241,6 @@ int main()
 						vy = 1;
 						vx = 0;
 					}
-					pressedMovementKey = true;
 					std::cout << "Go down\n";
 					break;
 
@@ -253,7 +250,6 @@ int main()
 						vy = 0;
 						vx = -1;
 					}
-					pressedMovementKey = true;
 					std::cout << "Go left\n";
 					break;
 
@@ -263,7 +259,6 @@ int main()
 						vy = 0;
 						vx = 1;
 					}
-					pressedMovementKey = true;
 					std::cout << "Go right\n";
 					break;
 
@@ -305,19 +300,23 @@ int main()
 					goto game_loop;
 
 					break;
+
+				case SPACE_KEY:
+					if (gameOver)
+					{
+						std::cout << "Restart\n";
+						gameOver = false;
+						snake = Snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
+						vx = 1;
+						vy = 0;
+						snake.setDirection(1, 0);
+						snakeBody = snake.getBody();
+						food = generateFood(food, snakeBody);
+					}
+					break;
 			}
 
-			if (pressedMovementKey && gameOver)
-			{
-				std::cout << "Restart\n";
-				gameOver = false;
-				snake = Snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
-				vx = 1;
-				vy = 0;
-				snake.setDirection(1, 0);
-				snakeBody = snake.getBody();
-				food = generateFood(food, snakeBody);
-			}
+
 		}
 
 		// Remove keys that were released
