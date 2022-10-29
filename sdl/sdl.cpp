@@ -6,6 +6,7 @@
 #include "../game_keycodes.hpp"
 #include "../game_functions.hpp"
 #include "../IGame.hpp"
+#include "../HSL_RGB.hpp"
 
 struct SDLColoredSquare
 {
@@ -18,6 +19,7 @@ class Game : public IGame<SDLColoredSquare>
 	private:
 		SDL_Window *_window;
 		SDL_Renderer *_renderer;
+		int _hslShift;
 
 	public:
 		// https://stackoverflow.com/questions/308276/can-i-call-a-constructor-from-another-constructor-do-constructor-chaining-in-c
@@ -41,7 +43,7 @@ class Game : public IGame<SDLColoredSquare>
 		}
 
 		Game(int width, int height, int squareSizePx, const std::string &windowTitle)
-			: IGame(width, height, squareSizePx)
+			: IGame(width, height, squareSizePx), _hslShift(0)
 		{
 			if (SDL_Init(SDL_INIT_VIDEO) != 0)
 			{
@@ -121,7 +123,9 @@ class Game : public IGame<SDLColoredSquare>
 					if (square.color.a == 0)
 						continue;
 
-					SDL_SetRenderDrawColor(_renderer, square.color.r, square.color.g, square.color.b, square.color.a);
+					RGB rotated = rotateRGBUsingHSL(square.color.r, square.color.g, square.color.b, _hslShift);
+
+					SDL_SetRenderDrawColor(_renderer, (int) rotated.r, (int) rotated.g, (int) rotated.b, square.color.a);
 					SDL_RenderFillRect(_renderer, &square.rect);
 				}
 			}
@@ -132,6 +136,9 @@ class Game : public IGame<SDLColoredSquare>
 			SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 			SDL_RenderClear(_renderer);
 			drawGrid();
+			_hslShift += 4;
+			if (_hslShift > 359)
+				_hslShift %= 360;
 			SDL_RenderPresent(_renderer);
 		}
 

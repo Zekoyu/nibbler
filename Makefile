@@ -1,6 +1,6 @@
 CC = g++
 CPPFLAGS = -Wall -Wextra -Werror -O3
-LDFLAGS = -ldl -lpthread
+LDFLAGS = -ldl -lpthread -lX11
 
 NAME = nibbler
 

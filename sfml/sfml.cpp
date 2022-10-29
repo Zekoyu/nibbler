@@ -85,7 +85,13 @@ class Game : public IGame<sf::RectangleShape>
 					sf::RectangleShape& square = _grid(x, y);
 					if (square.getFillColor() != sf::Color::Black && square.getFillColor().a != 0)
 					{
+						sf::Color save = square.getFillColor();
+						sf::Color grayscale = square.getFillColor();
+						sf::Uint8 col = (grayscale.r + grayscale.g + grayscale.b) / 3;
+						grayscale.r = grayscale.g = grayscale.b = col;
+						square.setFillColor(grayscale);
 						_window.draw(square);
+						square.setFillColor(save);
 					}
 				}
 			}

@@ -7,15 +7,17 @@
 #include <algorithm>
 #include <random>
 #include <map>
+#include <X11/Xlib.h>
 
 #include "./game_keycodes.hpp"
 #include "./game_functions.hpp"
 
 #define REFRESH_FPS 60 // To handle inputs
 #define GAME_FPS 20 // Game ticks per second (should not be lower then REFRESH_FPS)
-#define MAP_WIDTH 60
-#define MAP_HEIGHT 40
 #define SQUARE_SIZE_PX 10
+
+int g_mapWidth;
+int g_mapHeight;
 
 typedef struct s_nibbler_dynamic_library
 {
@@ -146,11 +148,11 @@ class Snake
 
 std::pair<int, int> &generateFood(std::pair<int, int> &food, std::vector<std::pair<int, int>> &snakeBody)
 {
-	food.first = rand() % MAP_WIDTH;
-	food.second = rand() % MAP_HEIGHT;
+	food.first = rand() % g_mapWidth;
+	food.second = rand() % g_mapHeight;
 
 	// No space left for food
-	if (snakeBody.size() == MAP_WIDTH * MAP_HEIGHT)
+	if (snakeBody.size() >= (unsigned int) (g_mapWidth * g_mapHeight))
 		return food;
 
 	for (std::pair<int, int> &bodyPart : snakeBody)
@@ -168,8 +170,57 @@ void switchLibrary(const char *newLibPath, t_nibbler_dynamic_library &lib)
 	openNibblerDynamicLibraryOrExit(newLibPath, lib);
 }
 
-int main()
+void usage(char *executableName)
 {
+	std::cout << "Usage: " << executableName << " <Map Width> <Map Height>" << std::endl;
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char **argv)
+{
+	if (argc < 3)
+		usage(argv[0]);
+
+	Display *display = XOpenDisplay(NULL);
+	if (!display)
+	{
+		std::cerr << "Cannot get primary monitor" << std::endl;
+		return(EXIT_FAILURE);
+	}
+	Screen *screen = DefaultScreenOfDisplay(display);
+
+	int screenWidth = screen->width;
+	int screenHeight = screen->height;
+
+	int mapWidth;
+	int mapHeight;
+
+	try
+	{
+		mapWidth = std::stoi(argv[1]);
+		mapHeight = std::stoi(argv[2]);
+	}
+	catch (const std::exception &e)
+	{
+		usage(argv[0]);
+	}
+
+	if (mapWidth * SQUARE_SIZE_PX > screenWidth || mapHeight * SQUARE_SIZE_PX > screenHeight)
+	{
+		std::cerr << "Map is too big\n";
+		usage(argv[0]);
+	}
+
+	if (mapWidth < 6 || mapHeight < 4)
+	{
+		std::cerr << "Map is too small\n";
+		usage(argv[0]);
+	}
+
+	g_mapWidth = (unsigned int) mapWidth;
+	g_mapHeight = (unsigned int) mapHeight;
+
+
 	std::vector<std::pair<const char *, const char *>> libs = { {"./sdl/libnibbler_sdl.so", "SDL2"},
 									  							{"./sfml/libnibbler_sfml.so", "SFML"},
 																{"./raylib/libnibbler_raylib.so", "Raylib"} };
@@ -180,11 +231,11 @@ int main()
 	int libIndex = rand() % libs.size();
 
 	openNibblerDynamicLibraryOrExit(libs[libIndex].first, lib);
-	lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[libIndex].second).c_str());
+	lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[libIndex].second).c_str());
 
 	std::vector<int> alreadyPressedKeys;
 	int currentFrameInSecond = 0;
-	Snake snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
+	Snake snake(g_mapWidth / 2 - 2, g_mapWidth / 2 + 2, g_mapHeight / 2);
 	auto snakeBody = snake.getBody();
 	std::pair<int, int> food = generateFood(food, snakeBody);
 
@@ -233,7 +284,7 @@ int main()
 						vy = -1;
 						vx = 0;
 					}
-					std::cout << "Go up\n";
+					// std::cout << "Go up\n";
 					break;
 
 				case DOWN_KEY:
@@ -242,7 +293,7 @@ int main()
 						vy = 1;
 						vx = 0;
 					}
-					std::cout << "Go down\n";
+					// std::cout << "Go down\n";
 					break;
 
 				case LEFT_KEY:
@@ -251,7 +302,7 @@ int main()
 						vy = 0;
 						vx = -1;
 					}
-					std::cout << "Go left\n";
+					// std::cout << "Go left\n";
 					break;
 
 				case RIGHT_KEY:
@@ -260,7 +311,7 @@ int main()
 						vy = 0;
 						vx = 1;
 					}
-					std::cout << "Go right\n";
+					// std::cout << "Go right\n";
 					break;
 
 				case ONE_KEY:
@@ -271,7 +322,7 @@ int main()
 					libIndex = 0;
 					switchLibrary(libs[0].first, lib);
 					gameOver = false;
-					lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[0].second).c_str());
+					lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[0].second).c_str());
 					goto game_loop;
 
 					break;
@@ -284,7 +335,7 @@ int main()
 					libIndex = 1;
 					switchLibrary(libs[1].first, lib);
 					gameOver = false;
-					lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[1].second).c_str());
+					lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[1].second).c_str());
 					goto game_loop;
 
 					break;
@@ -297,7 +348,7 @@ int main()
 					libIndex = 2;
 					switchLibrary(libs[2].first, lib);
 					gameOver = false;
-					lib.init_nibbler(MAP_WIDTH, MAP_HEIGHT, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[2].second).c_str());
+					lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[2].second).c_str());
 					goto game_loop;
 
 					break;
@@ -307,7 +358,7 @@ int main()
 					{
 						std::cout << "Restart\n";
 						gameOver = false;
-						snake = Snake(MAP_WIDTH / 2 - 2, MAP_WIDTH / 2 + 2, MAP_HEIGHT / 2);
+						snake = Snake(g_mapWidth / 2 - 2, g_mapWidth / 2 + 2, g_mapHeight / 2);
 						vx = 1;
 						vy = 0;
 						snake.setDirection(1, 0);
@@ -352,7 +403,7 @@ int main()
 
 			snake.move();
 
-			if (snake.getHeadX() >= MAP_WIDTH || snake.getHeadX() < 0 || snake.getHeadY() >= MAP_HEIGHT || snake.getHeadY() < 0 \
+			if (snake.getHeadX() >= g_mapWidth || snake.getHeadX() < 0 || snake.getHeadY() >= g_mapHeight || snake.getHeadY() < 0 \
 				|| snake.isSelfColliding())
 			{
 				std::cout << "Game over" << std::endl;
