@@ -17,11 +17,14 @@ class Game : public IGame<sf::RectangleShape>
 		{
 			_window.create(sf::VideoMode(width * squareSizePx, height * squareSizePx), windowTitle);
 			_window.setVerticalSyncEnabled(true);
-			_grid.fill(sf::RectangleShape(sf::Vector2f(squareSizePx, squareSizePx)));
-
-			for (int y = 0; y < _grid.getHeight(); y++)
-				for (int x = 0; x < _grid.getWidth(); x++)
+			for(int y = 0; y < _grid.getHeight(); y++)
+			{
+				for(int x = 0; x < _grid.getWidth(); x++)
+				{
+					_grid(x, y).setSize(sf::Vector2f(squareSizePx, squareSizePx));
 					_grid(x, y).setPosition(x * squareSizePx, y * squareSizePx);
+				}
+			}
 
 			// center window on screen
 			sf::VideoMode screenDimensionsMode = sf::VideoMode::getDesktopMode();
@@ -130,6 +133,11 @@ class Game : public IGame<sf::RectangleShape>
 				_window.draw(subtext);
 				_window.display();
 			}
+		}
+
+		void close()
+		{
+			_window.close();
 		}
 
 		bool pollEvent(sf::Event &event)
@@ -253,6 +261,16 @@ extern "C" {
 			return;
 
 		game->showGameOver();
+	}
+
+	void exit_nibbler()
+	{
+		if (game == NULL)
+			return;
+
+		game->close();
+		delete game;
+		game = NULL;
 	}
 
 

@@ -136,17 +136,7 @@ std::pair<int, int> &generateFood(std::pair<int, int> &food, std::vector<std::pa
 
 int main()
 {
-	void *sfmlHandle = dlOpenOrExit("./sfml/libnibbler_sfml.so");
-	// void *sdlHandle = dlOpenOrExit("./sdl/libnibbler_sdl.so");
-
-	// void *portaudioHandle = dlopen("./soloud/libsoloud.so", RTLD_LAZY);
-	// if (!portaudioHandle)
-	// {
-	// 	std::cerr << "dlopen failed: " << dlerror() << std::endl;
-	// 	exit(EXIT_FAILURE);
-	// }
-	// std::cout << "Successfully opened library libsoloud.so" << std::endl;
-
+	void *sfmlHandle = dlOpenOrExit("./sdl/libnibbler_sdl.so");
 
 	init_nibbler_t init_nibbler = (init_nibbler_t) loadDynamicSymbol(sfmlHandle, "init_nibbler");
 	get_pressed_keys_t get_pressed_keys = (get_pressed_keys_t) loadDynamicSymbol(sfmlHandle, "get_pressed_keys");
@@ -154,6 +144,7 @@ int main()
 	set_square_color_t set_square_color = (set_square_color_t) loadDynamicSymbol(sfmlHandle, "set_square_color");
 	render_t render = (render_t) loadDynamicSymbol(sfmlHandle, "render");
 	show_game_over_t show_game_over = (show_game_over_t) loadDynamicSymbol(sfmlHandle, "show_game_over");
+	exit_nibbler_t exit_nibbler = (exit_nibbler_t) loadDynamicSymbol(sfmlHandle, "exit_nibbler");
 
 	init_nibbler(MAP_WIDTH, MAP_HEIGHT, 10, "Nibbler");
 	std::vector<int> alreadyPressedKeys;
@@ -197,6 +188,7 @@ int main()
 			{
 				case EXIT_KEY:
 					std::cout << "Exit\n";
+					exit_nibbler();
 					exit(EXIT_SUCCESS);
 					break;
 

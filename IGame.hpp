@@ -1,3 +1,6 @@
+#ifndef IGAME_HPP
+#define IGAME_HPP
+
 #include "./Grid.hpp"
 
 template <typename SquareType>
@@ -48,4 +51,7 @@ class IGame
 		virtual void drawGrid() = 0;
 		virtual void render() = 0;
 		virtual void showGameOver() = 0;
+		virtual void close() = 0;
 };
+
+#endif

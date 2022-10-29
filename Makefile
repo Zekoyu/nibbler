@@ -12,17 +12,22 @@ all: $(NAME)
 sfml:
 	$(MAKE) -C ./sfml
 
-$(NAME): $(OBJS) sfml
+sdl:
+	$(MAKE) -C ./sdl
+
+$(NAME): $(OBJS) sfml sdl
 	$(CC) $(CPPFLAGS) $(OBJS) -o $(NAME) $(LDFLAGS)
 
 clean:
 	$(MAKE) -C ./sfml clean
+	$(MAKE) -C ./sdl clean
 	rm -f $(OBJS)
 
 fclean: clean
 	$(MAKE) -C ./sfml fclean
+	$(MAKE) -C ./sdl fclean
 	rm -f $(NAME)
 
 re: fclean $(NAME)
 
-.PHONY: all clean fclean re sfml
+.PHONY: all clean fclean re sfml sdl

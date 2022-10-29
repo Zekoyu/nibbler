@@ -1,6 +1,6 @@
 CC = g++
 CPPFLAGS = -Wall -Wextra -Werror -fPIC -O3
-LDFLAGS = -lSDL2
+LDFLAGS = -lSDL2 -lSDL2_ttf
 
 NAME = libnibbler_sdl.so
 
