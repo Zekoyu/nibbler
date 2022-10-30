@@ -16,6 +16,12 @@
 #define GAME_FPS 20 // Game ticks per second (should not be lower then REFRESH_FPS)
 #define SQUARE_SIZE_PX 10
 
+enum e_gamemode
+{
+	GAMEMODE_NORMAL,
+	GAMEMODE_FASTASFUCK,
+};
+
 int g_mapWidth;
 int g_mapHeight;
 
@@ -172,7 +178,8 @@ void switchLibrary(const char *newLibPath, t_nibbler_dynamic_library &lib)
 
 void usage(char *executableName)
 {
-	std::cout << "Usage: " << executableName << " <Map Width> <Map Height>" << std::endl;
+	std::cout << "Usage: " << executableName << " <Map Width> <Map Height> <Mode>" << std::endl;
+	std::cout << "Mode can be 'classic' or 'faf' (fast as fuck)" << std::endl;
 	exit(EXIT_FAILURE);
 }
 
@@ -220,6 +227,24 @@ int main(int argc, char **argv)
 	g_mapWidth = (unsigned int) mapWidth;
 	g_mapHeight = (unsigned int) mapHeight;
 
+	int gamemode = GAMEMODE_NORMAL;
+
+	if (argc >= 4)
+	{
+		std::string mode = argv[3];
+		if (mode == "normal")
+			gamemode = GAMEMODE_NORMAL;
+		else if (mode == "faf" || mode == "fastasfuck")
+			gamemode = GAMEMODE_FASTASFUCK;
+		else
+		{
+			std::cerr << "Wrong gamemode\n";
+			usage(argv[0]);
+		}
+	}
+
+	int gameFps = GAME_FPS;
+
 
 	std::vector<std::pair<const char *, const char *>> libs = { {"./sdl/libnibbler_sdl.so", "SDL2"},
 									  							{"./sfml/libnibbler_sfml.so", "SFML"},
@@ -234,7 +259,7 @@ int main(int argc, char **argv)
 	lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[libIndex].second).c_str());
 
 	std::vector<int> alreadyPressedKeys;
-	int currentFrameInSecond = 0;
+	int currentFrame = 0;
 	Snake snake(g_mapWidth / 2 - 2, g_mapWidth / 2 + 2, g_mapHeight / 2);
 	auto snakeBody = snake.getBody();
 	std::pair<int, int> food = generateFood(food, snakeBody);
@@ -385,11 +410,11 @@ int main(int argc, char **argv)
 			keyIt = alreadyPressedKeys.erase(keyIt);
 		}
 
-		currentFrameInSecond++;
-		if (currentFrameInSecond == REFRESH_FPS)
-			currentFrameInSecond = 0;
+		currentFrame++;
+		if (currentFrame > 2000000000) // to avoid overflow
+			currentFrame = 0;
 
-		if (currentFrameInSecond % (REFRESH_FPS / GAME_FPS) == 0)
+		if (currentFrame % (REFRESH_FPS / gameFps) == 0)
 		{
 			if (gameOver)
 				continue;
@@ -408,6 +433,7 @@ int main(int argc, char **argv)
 			{
 				std::cout << "Game over" << std::endl;
 				gameOver = true;
+				gameFps = GAME_FPS;
 				lib.show_game_over();
 				continue;
 				// see https://github.com/microsoft/wslg/issues/445 for segfault, always do LIBGL_ALWAYS_SOFTWARE=1  ./nibbler  on WSL
@@ -416,6 +442,12 @@ int main(int argc, char **argv)
 
 			if (snake.getHeadX() == food.first && snake.getHeadY() == food.second)
 			{
+				if (gamemode == GAMEMODE_FASTASFUCK)
+				{
+					gameFps++;
+					if (gameFps > REFRESH_FPS)
+						gameFps = REFRESH_FPS;
+				}
 				snake.grow();
 				food = generateFood(food, snakeBody);
 			}
