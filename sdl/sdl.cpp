@@ -95,7 +95,7 @@ class Game : public IGame<SDLColoredSquare>
 			}
 		}
 
-		void setSquareColor(int x, int y, int r, int g, int b)
+		void setSquareColor(int x, int y, int r, int g, int b) override
 		{
 			_grid(x, y).color.r = r;
 			_grid(x, y).color.g = g;
@@ -103,14 +103,14 @@ class Game : public IGame<SDLColoredSquare>
 			_grid(x, y).color.a = 255;
 		}
 
-		void setSquaresBlack()
+		void setSquaresBlack() override
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
 				for (int x = 0; x < _grid.getWidth(); x++)
 					setSquareColor(x, y, 0, 0, 0);
 		}
 
-		void drawGrid()
+		void drawGrid() override
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
 			{
@@ -131,7 +131,7 @@ class Game : public IGame<SDLColoredSquare>
 			}
 		}
 
-		void render()
+		void render() override
 		{
 			SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 			SDL_RenderClear(_renderer);
@@ -142,7 +142,7 @@ class Game : public IGame<SDLColoredSquare>
 			SDL_RenderPresent(_renderer);
 		}
 
-		void showGameOver()
+		void showGameOver() override
 		{
 			if (TTF_Init() == -1)
 			{
@@ -198,7 +198,7 @@ class Game : public IGame<SDLColoredSquare>
 			SDL_RenderPresent(_renderer);
 		}
 
-		void close()
+		void close() override
 		{
 			SDL_DestroyRenderer(_renderer);
 			SDL_DestroyWindow(_window);

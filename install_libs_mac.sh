@@ -2,13 +2,15 @@ brew install curl # Download failed: Homebrew-installed `curl` is not installed 
 brew install sfml
 
 brew install sdl2
+brew install sdl2_ttf
 
-brew install libx11
+if [ ! -d ./raylib/raylib/src ]; then
+	cd ./raylib
+	git clone https://github.com/raysan5/raylib.git raylib
+	cd ./raylib/src
+	make PLATFORM=PLATFORM_DESKTOP
+	# sudo make install RAYLIB_LIBTYPE=SHARED
+	cd ../../
+fi
 
-
-cd raylib
-git clone https://github.com/raysan5/raylib.git raylib
-cd raylib/src
-make PLATFORM=PLATFORM_DESKTOP RAYLIB_LIBTYPE=SHARED
-sudo make install RAYLIB_LIBTYPE=SHARED
-cd ../../
+./symlink_includes.sh

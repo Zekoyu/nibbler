@@ -1,8 +1,8 @@
 CC = g++
 CPPFLAGS = -Wall -Wextra -Werror -fPIC -O3 -std=c++11 -I../include-sfml
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -L../lib-sfml
+LDFLAGS = -lsfml-audio -L../lib-sfml
 
-NAME = libnibbler_sfml.so
+NAME = libnibbler_sfml-sound.so
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)

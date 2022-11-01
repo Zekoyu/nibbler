@@ -1,6 +1,6 @@
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 #include <iostream>
+#include <unistd.h>
 
 #include "../game_keycodes.hpp"
 #include "../game_functions.hpp"
@@ -64,19 +64,19 @@ class Game : public IGame<sf::RectangleShape>
 					_grid(x, y).setSize(sf::Vector2f(px, px));
 		}
 
-		void setSquareColor(int x, int y, int r, int g, int b)
+		void setSquareColor(int x, int y, int r, int g, int b) override
 		{
 			_grid(x, y).setFillColor(sf::Color(r, g, b));
 		}
 
-		void setSquaresBlack()
+		void setSquaresBlack() override
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
 				for (int x = 0; x < _grid.getWidth(); x++)
 					setSquareColor(x, y, 0, 0, 0);
 		}
 
-		void drawGrid()
+		void drawGrid() override
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
 			{
@@ -97,14 +97,14 @@ class Game : public IGame<sf::RectangleShape>
 			}
 		}
 
-		void render()
+		void render() override
 		{
 			_window.clear();
 			drawGrid();
 			_window.display();
 		}
 
-		void showGameOver()
+		void showGameOver() override
 		{
 			sf::Font font;
 			if (font.loadFromFile("./ComicNeueSansID.ttf"))
@@ -141,7 +141,7 @@ class Game : public IGame<sf::RectangleShape>
 			}
 		}
 
-		void close()
+		void close() override
 		{
 			_window.close();
 		}
@@ -171,20 +171,6 @@ extern "C" {
 		std::cout << "Initializing Nibbler" << std::endl;
 
 		game = new Game(width, height, cell_size, window_name);
-
-		// sf::SoundBuffer buffer;
-		// if (buffer.loadFromFile("./test.wav"))
-		// {
-		// 	std::cout << "Loaded sound" << std::endl;
-		// 	sf::Sound sound;
-		// 	sound.setBuffer(buffer);
-		// 	std::cout << "Sound duration: " << sound.getPlayingOffset().asSeconds() << std::endl;
-		// 	sound.play();
-		// }
-		// else
-		// {
-		// 	std::cout << "Failed to load sound" << std::endl;
-		// }
 
 		std::cout << "Successfully initialized Nibbler" << std::endl;
 

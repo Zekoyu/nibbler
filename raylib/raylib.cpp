@@ -80,7 +80,7 @@ class Game : public IGame<RaylibColoredSquare>
 			}
 		}
 
-		void setSquareColor(int x, int y, int r, int g, int b)
+		void setSquareColor(int x, int y, int r, int g, int b) override
 		{
 			_grid(x, y).color.r = r;
 			_grid(x, y).color.g = g;
@@ -88,14 +88,14 @@ class Game : public IGame<RaylibColoredSquare>
 			_grid(x, y).color.a = 255;
 		}
 
-		void setSquaresBlack()
+		void setSquaresBlack() override
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
 				for (int x = 0; x < _grid.getWidth(); x++)
 					setSquareColor(x, y, 0, 0, 0);
 		}
 
-		void drawGrid()
+		void drawGrid() override
 		{
 			for (int y = 0; y < _grid.getHeight(); y++)
 			{
@@ -114,7 +114,7 @@ class Game : public IGame<RaylibColoredSquare>
 			}
 		}
 
-		void render()
+		void render() override
 		{
 			BeginDrawing();
 			ClearBackground(Color{0, 0, 0, 255});
@@ -122,7 +122,7 @@ class Game : public IGame<RaylibColoredSquare>
 			EndDrawing();
 		}
 
-		void showGameOver()
+		void showGameOver() override
 		{
 			// https://github.com/raysan5/raylib/issues/2355
 			Font font = LoadFontEx("./ComicNeueSansID.ttf", 100, NULL, 0);
@@ -147,7 +147,7 @@ class Game : public IGame<RaylibColoredSquare>
 			UnloadFont(font);
 		}
 
-		void close()
+		void close() override
 		{
 			CloseWindow();
 		}

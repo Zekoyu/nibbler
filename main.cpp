@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <random>
 #include <map>
-#include <X11/Xlib.h>
+#include <SFML/Window.hpp>
 
 #include "./game_keycodes.hpp"
 #include "./game_functions.hpp"
@@ -37,6 +37,9 @@ typedef struct s_nibbler_dynamic_library
 	exit_nibbler_t exit_nibbler;
 
 } t_nibbler_dynamic_library;
+
+typedef int (*load_sound_t)(const char *path);
+typedef int (*play_sound_t)();
 
 void *loadDynamicSymbol(void *handle, const char *symbol)
 {
@@ -188,16 +191,8 @@ int main(int argc, char **argv)
 	if (argc < 3)
 		usage(argv[0]);
 
-	Display *display = XOpenDisplay(NULL);
-	if (!display)
-	{
-		std::cerr << "Cannot get primary monitor" << std::endl;
-		return(EXIT_FAILURE);
-	}
-	Screen *screen = DefaultScreenOfDisplay(display);
-
-	int screenWidth = screen->width;
-	int screenHeight = screen->height;
+	int screenWidth = sf::VideoMode::getDesktopMode().width;
+	int screenHeight = sf::VideoMode::getDesktopMode().height;
 
 	int mapWidth;
 	int mapHeight;
@@ -249,6 +244,16 @@ int main(int argc, char **argv)
 	std::vector<std::pair<const char *, const char *>> libs = { {"./sdl/libnibbler_sdl.so", "SDL2"},
 									  							{"./sfml/libnibbler_sfml.so", "SFML"},
 																{"./raylib/libnibbler_raylib.so", "Raylib"} };
+
+	const char *soundLibPath = "./sfml-sound/libnibbler_sfml-sound.so";
+	void *soundLibHandle = dlOpenOrExit(soundLibPath);
+
+	load_sound_t load_sound = (load_sound_t)loadDynamicSymbol(soundLibHandle, "load_sound");
+	play_sound_t play_sound = (play_sound_t)loadDynamicSymbol(soundLibHandle, "play_sound");
+
+
+	if (load_sound("./sounds/grow.wav") != 0)
+		std::cerr << "Cannot open sound grow.wav" << std::endl;
 
 	t_nibbler_dynamic_library lib;
 	srand(time(NULL));
@@ -448,6 +453,7 @@ int main(int argc, char **argv)
 					if (gameFps > REFRESH_FPS)
 						gameFps = REFRESH_FPS;
 				}
+				play_sound();
 				snake.grow();
 				food = generateFood(food, snakeBody);
 			}
