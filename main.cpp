@@ -38,6 +38,7 @@ typedef struct s_nibbler_dynamic_library
 	render_t render;
 	show_game_over_t show_game_over;
 	exit_nibbler_t exit_nibbler;
+	set_background_image_t set_background_image;
 
 } t_nibbler_dynamic_library;
 
@@ -81,6 +82,7 @@ void openNibblerDynamicLibraryOrExit(const char *path, t_nibbler_dynamic_library
 	lib.render = (render_t)loadDynamicSymbol(lib.handle, "render");
 	lib.show_game_over = (show_game_over_t)loadDynamicSymbol(lib.handle, "show_game_over");
 	lib.exit_nibbler = (exit_nibbler_t)loadDynamicSymbol(lib.handle, "exit_nibbler");
+	lib.set_background_image = (set_background_image_t)loadDynamicSymbol(lib.handle, "set_background_image");
 }
 
 class Snake
@@ -234,8 +236,8 @@ void switchLibrary(const char *newLibPath, t_nibbler_dynamic_library &lib)
 
 void usage(char *executableName)
 {
-	std::cout << "Usage: " << executableName << " <Map Width> <Map Height> <Mode>" << std::endl;
-	std::cout << "Mode can be 'classic' or 'faf' (fast as fuck)" << std::endl;
+	std::cout << "Usage: " << executableName << " <Map Width> <Map Height> <Mode> -b <Background Image>" << std::endl;
+	std::cout << "Mode can be 'classic', 'faf' (fast as fuck), 'easy' (or musical) or 'multiplayer'" << std::endl;
 	exit(EXIT_FAILURE);
 }
 
@@ -261,22 +263,32 @@ int main(int argc, char **argv)
 	}
 
 	int gamemode = GAMEMODE_NORMAL;
+	char *backgroundImage = NULL;
 
 	if (argc >= 4)
 	{
-		std::string mode = argv[3];
-		if (mode == "normal")
-			gamemode = GAMEMODE_NORMAL;
-		else if (mode == "faf" || mode == "fastasfuck")
-			gamemode = GAMEMODE_FASTASFUCK;
-		else if (mode == "multiplayer" || mode == "battle" || mode == "versus")
-			gamemode = GAMEMODE_MULTIPLAYER;
-		else if (mode == "music" || mode == "musical" || mode == "easy" || mode == "peaceful")
-			gamemode = GAMEMODE_MUSICAL;
-		else
+		for (int i = 3; i < argc; i++)
 		{
-			std::cerr << "Wrong gamemode\n";
-			usage(argv[0]);
+			std::string mode = argv[i];
+			if (mode == "normal")
+				gamemode = GAMEMODE_NORMAL;
+			else if (mode == "faf" || mode == "fastasfuck")
+				gamemode = GAMEMODE_FASTASFUCK;
+			else if (mode == "multiplayer" || mode == "battle" || mode == "versus")
+				gamemode = GAMEMODE_MULTIPLAYER;
+			else if (mode == "music" || mode == "musical" || mode == "easy" || mode == "peaceful")
+				gamemode = GAMEMODE_MUSICAL;
+			else if (mode == "-b" && i + 1 < argc)
+			{
+				backgroundImage = argv[i + 1];
+				i++;
+				continue;
+			}
+			else
+			{
+				std::cerr << "Wrong argument: '" << mode << "'\n";
+				usage(argv[0]);
+			}
 		}
 	}
 
@@ -323,6 +335,12 @@ int main(int argc, char **argv)
 
 	openNibblerDynamicLibraryOrExit(libs[libIndex].first, lib);
 	lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[libIndex].second).c_str());
+
+	if (backgroundImage)
+	{
+		std::cout << "Setting background image to " << backgroundImage << std::endl;
+		lib.set_background_image(backgroundImage);
+	}
 
 	std::vector<int> alreadyPressedKeys;
 	int currentFrame = 0;
@@ -477,6 +495,9 @@ int main(int argc, char **argv)
 					switchLibrary(libs[0].first, lib);
 					gameOver = false;
 					lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[0].second).c_str());
+
+					if (backgroundImage)
+						lib.set_background_image(backgroundImage);
 					goto game_loop;
 
 					break;
@@ -490,6 +511,9 @@ int main(int argc, char **argv)
 					switchLibrary(libs[1].first, lib);
 					gameOver = false;
 					lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[1].second).c_str());
+
+					if (backgroundImage)
+						lib.set_background_image(backgroundImage);
 					goto game_loop;
 
 					break;
@@ -503,6 +527,9 @@ int main(int argc, char **argv)
 					switchLibrary(libs[2].first, lib);
 					gameOver = false;
 					lib.init_nibbler(g_mapWidth, g_mapHeight, SQUARE_SIZE_PX, (std::string("Nibbler - ") + libs[2].second).c_str());
+
+					if (backgroundImage)
+						lib.set_background_image(backgroundImage);
 					goto game_loop;
 
 					break;

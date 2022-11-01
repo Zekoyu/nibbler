@@ -10,10 +10,11 @@ class IGame
 		int _width, _height;
 		int _squareSizePx;
 		Grid<SquareType> _grid;
+		bool _background;
 
 	protected:
 		IGame(int width, int height, int squareSizePx)
-			: _width(width), _height(height), _squareSizePx(squareSizePx), _grid(Grid<SquareType>(width, height))
+			: _width(width), _height(height), _squareSizePx(squareSizePx), _grid(Grid<SquareType>(width, height)), _background(false)
 		{
 		}
 
@@ -52,6 +53,7 @@ class IGame
 		virtual void render() = 0;
 		virtual void showGameOver() = 0;
 		virtual void close() = 0;
+		virtual void setBackground(const char *path) = 0;
 };
 
 #endif

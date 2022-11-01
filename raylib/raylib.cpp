@@ -15,6 +15,8 @@ struct RaylibColoredSquare
 class Game : public IGame<RaylibColoredSquare>
 {
 	private:
+		Image _backgroundImage;
+		Texture2D _backgroundTexture;
 
 
 	public:
@@ -118,6 +120,8 @@ class Game : public IGame<RaylibColoredSquare>
 		{
 			BeginDrawing();
 			ClearBackground(Color{0, 0, 0, 255});
+			if (_background)
+				DrawTexture(_backgroundTexture, 0, 0, WHITE);
 			drawGrid();
 			EndDrawing();
 		}
@@ -160,6 +164,16 @@ class Game : public IGame<RaylibColoredSquare>
 		bool isKeyPressed(int key)
 		{
 			return IsKeyDown(key);
+		}
+
+		void setBackground(const char *path) override
+		{
+			_backgroundImage = LoadImage(path);
+
+			ImageResize(&_backgroundImage, GetScreenWidth(), GetScreenHeight());
+
+			_backgroundTexture = LoadTextureFromImage(_backgroundImage);
+			_background = true;
 		}
 };
 
@@ -288,6 +302,15 @@ extern "C" {
 		delete game;
 		game = NULL;
 	}
+
+	void set_background_image(const char *path)
+	{
+		if (game == NULL)
+			return;
+
+		game->setBackground(path);
+	}
+
 
 
 #ifdef __cplusplus

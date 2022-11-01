@@ -20,6 +20,8 @@ class Game : public IGame<SDLColoredSquare>
 		SDL_Window *_window;
 		SDL_Renderer *_renderer;
 		int _hslShift;
+		SDL_Surface *_backgroundSurface;
+		SDL_Texture *_backgroundTexture;
 
 	public:
 		// https://stackoverflow.com/questions/308276/can-i-call-a-constructor-from-another-constructor-do-constructor-chaining-in-c
@@ -135,6 +137,8 @@ class Game : public IGame<SDLColoredSquare>
 		{
 			SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 			SDL_RenderClear(_renderer);
+			if (_background)
+				SDL_RenderCopy(_renderer, _backgroundTexture, NULL, NULL);
 			drawGrid();
 			_hslShift += 4;
 			if (_hslShift > 359)
@@ -214,6 +218,20 @@ class Game : public IGame<SDLColoredSquare>
 		{
 			const Uint8 *state = SDL_GetKeyboardState(NULL);
 			return state[SDL_GetScancodeFromKey(key)];
+		}
+
+		void setBackground(const char *path) override
+		{
+			_backgroundSurface = SDL_LoadBMP(path);
+
+			if (!_backgroundSurface)
+				return;
+
+			_backgroundTexture = SDL_CreateTextureFromSurface(_renderer, _backgroundSurface);
+			if (!_backgroundTexture)
+				return;
+
+			_background = true;
 		}
 };
 
@@ -342,6 +360,14 @@ extern "C" {
 		game->close();
 		delete game;
 		game = NULL;
+	}
+
+	void set_background_image(const char *path)
+	{
+		if (game == NULL)
+			return;
+
+		game->setBackground(path);
 	}
 
 

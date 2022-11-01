@@ -8,6 +8,7 @@ extern "C" {
 	void render();
 	void show_game_over();
 	void exit_nibbler();
+	void set_background_image(const char *path);
 #ifdef __cplusplus
 }
 #endif
@@ -19,3 +20,4 @@ typedef void (*set_square_color_t)(int x, int y, int r, int g, int b);
 typedef void (*render_t)(void);
 typedef void (*show_game_over_t)(void);
 typedef void (*exit_nibbler_t)(void);
+typedef void (*set_background_image_t)(const char *path);

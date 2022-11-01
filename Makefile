@@ -1,5 +1,5 @@
 CC = g++
-CPPFLAGS = -Wall -Wextra -Werror -O3 -std=c++11 -I./include-sfml -g -fsanitize=address
+CPPFLAGS = -Wall -Wextra -Werror -O3 -std=c++11 -I./include-sfml
 LDFLAGS = -ldl -lpthread -lsfml-window -L./lib-sfml
 
 NAME = nibbler
@@ -26,6 +26,7 @@ sfml-sound:
 	$(MAKE) -C ./sfml-sound
 
 $(NAME): $(OBJS) sfml sdl raylib sfml-sound
+	@echo Comiling $(NAME) executable
 	$(CC) $(CPPFLAGS) $(OBJS) -o $(NAME) $(LDFLAGS)
 
 clean:

@@ -9,6 +9,6 @@ if [ ! -d ./raylib/raylib/src ]; then
 	cd raylib
 	git clone https://github.com/raysan5/raylib.git raylib
 	cd raylib/src
-	make PLATFORM=PLATFORM_DESKTOP
+	make PLATFORM=PLATFORM_DESKTOP CUSTOM_CFLAGS="-DSUPPORT_FILEFORMAT_BMP=1"
 	cd ../../
 fi

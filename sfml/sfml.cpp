@@ -10,6 +10,8 @@ class Game : public IGame<sf::RectangleShape>
 {
 	private:
 		sf::RenderWindow _window;
+		sf::Texture _backgroundTex;
+		sf::Sprite _backgroundSprite;
 
 	public:
 		Game(int width, int height, int squareSizePx, const std::string &windowTitle)
@@ -100,6 +102,8 @@ class Game : public IGame<sf::RectangleShape>
 		void render() override
 		{
 			_window.clear();
+			if (_background)
+				_window.draw(_backgroundSprite);
 			drawGrid();
 			_window.display();
 		}
@@ -154,6 +158,20 @@ class Game : public IGame<sf::RectangleShape>
 		bool isKeyPressed(sf::Keyboard::Key key)
 		{
 			return sf::Keyboard::isKeyPressed(key);
+		}
+
+		void setBackground(const char *path) override
+		{
+			if (!_backgroundTex.loadFromFile(path))
+				return;
+
+			_backgroundSprite.setTexture(_backgroundTex);
+			_background = true;
+			_backgroundSprite.setOrigin(0, 0);
+			sf::FloatRect boundingBox = _backgroundSprite.getGlobalBounds();
+			float scaleFactorX = _window.getSize().x / boundingBox.width;
+			float scaleFactorY = _window.getSize().y / boundingBox.height;
+			_backgroundSprite.setScale(scaleFactorX, scaleFactorY);
 		}
 };
 
@@ -280,6 +298,14 @@ extern "C" {
 		game->close();
 		delete game;
 		game = NULL;
+	}
+
+	void set_background_image(const char *path)
+	{
+		if (game == NULL)
+			return;
+
+		game->setBackground(path);
 	}
 
 
