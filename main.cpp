@@ -351,7 +351,7 @@ int main(int argc, char **argv)
 	int vy = 0;
 	int vx = 1;
 	int vy2 = 0;
-	int vx2 = 1;
+	int vx2 = -1;
 	bool gameOver = false;
 
 	game_loop:
