@@ -182,45 +182,59 @@ extern "C" {
 		if (game == NULL)
 			return -1;
 
-		// At most 5 keys (esc, up, down, left, right)
-		// Just malloc 5 and set size to 5 (called must check NONE_KEY) for simplicity
-		int max_keys_count = 9;
-		*keys = (int *)calloc(sizeof(int), max_keys_count);
-		*size = max_keys_count;
+		*keys = (int *)calloc(sizeof(int), KEY_TOTAL_COUNT + 1);
+		*size = KEY_TOTAL_COUNT + 1;
 
 		sf::Event event;
 		while (game->pollEvent(event))
 		{
 			if (event.type == sf::Event::Closed)
-				(*keys)[0] = EXIT_KEY;
+				(*keys)[EXIT_KEY] = EXIT_KEY;
 		}
 
 		if (game->isKeyPressed(sf::Keyboard::Escape))
-			(*keys)[0] = EXIT_KEY;
+			(*keys)[EXIT_KEY] = EXIT_KEY;
 
-		if (game->isKeyPressed(sf::Keyboard::Up) || game->isKeyPressed(sf::Keyboard::W))
-			(*keys)[1] = UP_KEY;
 
-		if (game->isKeyPressed(sf::Keyboard::Down) || game->isKeyPressed(sf::Keyboard::S))
-			(*keys)[2] = DOWN_KEY;
+		if (game->isKeyPressed(sf::Keyboard::Up))
+			(*keys)[UP_KEY] = UP_KEY;
 
-		if (game->isKeyPressed(sf::Keyboard::Left) || game->isKeyPressed(sf::Keyboard::A))
-			(*keys)[3] = LEFT_KEY;
+		if (game->isKeyPressed(sf::Keyboard::W))
+			(*keys)[W_KEY] = W_KEY;
 
-		if (game->isKeyPressed(sf::Keyboard::Right) || game->isKeyPressed(sf::Keyboard::D))
-			(*keys)[4] = RIGHT_KEY;
+
+		if (game->isKeyPressed(sf::Keyboard::Down))
+			(*keys)[DOWN_KEY] = DOWN_KEY;
+
+		if (game->isKeyPressed(sf::Keyboard::S))
+			(*keys)[S_KEY] = S_KEY;
+
+
+		if (game->isKeyPressed(sf::Keyboard::Left))
+			(*keys)[LEFT_KEY] = LEFT_KEY;
+
+		if (game->isKeyPressed(sf::Keyboard::A))
+			(*keys)[A_KEY] = A_KEY;
+
+
+		if (game->isKeyPressed(sf::Keyboard::Right))
+			(*keys)[RIGHT_KEY] = RIGHT_KEY;
+
+		if (game->isKeyPressed(sf::Keyboard::D))
+			(*keys)[D_KEY] = D_KEY;
+
 
 		if (game->isKeyPressed(sf::Keyboard::Num1) || game->isKeyPressed(sf::Keyboard::Numpad1))
-			(*keys)[5] = ONE_KEY;
+			(*keys)[ONE_KEY] = ONE_KEY;
 
 		if (game->isKeyPressed(sf::Keyboard::Num2) || game->isKeyPressed(sf::Keyboard::Numpad2))
-			(*keys)[6] = TWO_KEY;
+			(*keys)[TWO_KEY] = TWO_KEY;
 
 		if (game->isKeyPressed(sf::Keyboard::Num3) || game->isKeyPressed(sf::Keyboard::Numpad3))
-			(*keys)[7] = THREE_KEY;
+			(*keys)[THREE_KEY] = THREE_KEY;
 
 		if (game->isKeyPressed(sf::Keyboard::Space))
-			(*keys)[8] = SPACE_KEY;
+			(*keys)[SPACE_KEY] = SPACE_KEY;
 
 		return 0;
 	}

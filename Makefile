@@ -1,5 +1,5 @@
 CC = g++
-CPPFLAGS = -Wall -Wextra -Werror -O3 -std=c++11 -I./include-sfml
+CPPFLAGS = -Wall -Wextra -Werror -O3 -std=c++11 -I./include-sfml -g -fsanitize=address
 LDFLAGS = -ldl -lpthread -lsfml-window -L./lib-sfml
 
 NAME = nibbler

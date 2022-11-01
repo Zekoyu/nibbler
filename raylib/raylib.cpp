@@ -193,41 +193,55 @@ extern "C" {
 		// looping (game over screen) do it manually
 		PollInputEvents();
 
-		// At most 5 keys (esc, up, down, left, right)
-		// Just malloc 5 and set size to 5 (called must check NONE_KEY) for simplicity
-		int max_keys_count = 9;
-		*keys = (int *)calloc(sizeof(int), max_keys_count);
-		*size = max_keys_count;
+		*keys = (int *)calloc(sizeof(int), KEY_TOTAL_COUNT + 1);
+		*size = KEY_TOTAL_COUNT + 1;
 
 		if (game->isCloseButtonClicked())
-			(*keys)[0] = EXIT_KEY;
+			(*keys)[EXIT_KEY] = EXIT_KEY;
 
 		if (game->isKeyPressed(KEY_ESCAPE))
-			(*keys)[0] = EXIT_KEY;
+			(*keys)[EXIT_KEY] = EXIT_KEY;
 
-		if (game->isKeyPressed(KEY_UP) || game->isKeyPressed(KEY_W))
-			(*keys)[1] = UP_KEY;
 
-		if (game->isKeyPressed(KEY_DOWN) || game->isKeyPressed(KEY_S))
-			(*keys)[2] = DOWN_KEY;
+		if (game->isKeyPressed(KEY_UP))
+			(*keys)[UP_KEY] = UP_KEY;
 
-		if (game->isKeyPressed(KEY_LEFT) || game->isKeyPressed(KEY_A))
-			(*keys)[3] = LEFT_KEY;
+		if (game->isKeyPressed(KEY_W))
+			(*keys)[W_KEY] = W_KEY;
 
-		if (game->isKeyPressed(KEY_RIGHT) || game->isKeyPressed(KEY_D))
-			(*keys)[4] = RIGHT_KEY;
+
+		if (game->isKeyPressed(KEY_DOWN))
+			(*keys)[DOWN_KEY] = DOWN_KEY;
+
+		if (game->isKeyPressed(KEY_S))
+			(*keys)[S_KEY] = S_KEY;
+
+
+		if (game->isKeyPressed(KEY_LEFT))
+			(*keys)[LEFT_KEY] = LEFT_KEY;
+
+		if (game->isKeyPressed(KEY_A))
+			(*keys)[A_KEY] = A_KEY;
+
+
+		if (game->isKeyPressed(KEY_RIGHT))
+			(*keys)[RIGHT_KEY] = RIGHT_KEY;
+
+		if (game->isKeyPressed(KEY_D))
+			(*keys)[D_KEY] = D_KEY;
+
 
 		if (game->isKeyPressed(KEY_ONE) || game->isKeyPressed(KEY_KP_1))
-			(*keys)[5] = ONE_KEY;
+			(*keys)[ONE_KEY] = ONE_KEY;
 
 		if (game->isKeyPressed(KEY_TWO) || game->isKeyPressed(KEY_KP_2))
-			(*keys)[6] = TWO_KEY;
+			(*keys)[TWO_KEY] = TWO_KEY;
 
 		if (game->isKeyPressed(KEY_THREE) || game->isKeyPressed(KEY_KP_3))
-			(*keys)[7] = THREE_KEY;
+			(*keys)[THREE_KEY] = THREE_KEY;
 
 		if (game->isKeyPressed(KEY_SPACE))
-			(*keys)[8] = SPACE_KEY;
+			(*keys)[SPACE_KEY] = SPACE_KEY;
 
 		return 0;
 	}

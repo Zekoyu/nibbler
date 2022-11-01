@@ -244,46 +244,59 @@ extern "C" {
 		if (game == NULL)
 			return -1;
 
-		// At most 5 keys (esc, up, down, left, right)
-		// Just malloc 5 and set size to 5 (called must check NONE_KEY) for simplicity
-		int max_keys_count = 9;
-		*keys = (int *)calloc(sizeof(int), max_keys_count);
-		*size = max_keys_count;
+		*keys = (int *)calloc(sizeof(int), KEY_TOTAL_COUNT + 1);
+		*size = KEY_TOTAL_COUNT + 1;
 
 		SDL_Event event;
 		// pollEvents
 		while (game->pollEvent(event))
 		{
 			if (event.type == SDL_QUIT)
-				(*keys)[0] = EXIT_KEY;
+				(*keys)[EXIT_KEY] = EXIT_KEY;
 		}
 
 		if (game->isKeyPressed(SDLK_ESCAPE))
-			(*keys)[0] = EXIT_KEY;
+			(*keys)[EXIT_KEY] = EXIT_KEY;
 
-		if (game->isKeyPressed(SDLK_UP) || game->isKeyPressed(SDLK_w))
-			(*keys)[1] = UP_KEY;
 
-		if (game->isKeyPressed(SDLK_DOWN) || game->isKeyPressed(SDLK_s))
-			(*keys)[2] = DOWN_KEY;
+		if (game->isKeyPressed(SDLK_UP))
+			(*keys)[UP_KEY] = UP_KEY;
 
-		if (game->isKeyPressed(SDLK_LEFT) || game->isKeyPressed(SDLK_a))
-			(*keys)[3] = LEFT_KEY;
+		if (game->isKeyPressed(SDLK_w))
+			(*keys)[W_KEY] = W_KEY;
 
-		if (game->isKeyPressed(SDLK_RIGHT) || game->isKeyPressed(SDLK_d))
-			(*keys)[4] = RIGHT_KEY;
+
+		if (game->isKeyPressed(SDLK_DOWN))
+			(*keys)[DOWN_KEY] = DOWN_KEY;
+
+		if (game->isKeyPressed(SDLK_s))
+			(*keys)[S_KEY] = S_KEY;
+
+
+		if (game->isKeyPressed(SDLK_LEFT))
+			(*keys)[LEFT_KEY] = LEFT_KEY;
+
+		if (game->isKeyPressed(SDLK_a))
+			(*keys)[A_KEY] = A_KEY;
+
+
+		if (game->isKeyPressed(SDLK_RIGHT))
+			(*keys)[RIGHT_KEY] = RIGHT_KEY;
+
+		if (game->isKeyPressed(SDLK_d))
+			(*keys)[D_KEY] = D_KEY;
 
 		if (game->isKeyPressed(SDLK_1) || game->isKeyPressed(SDLK_KP_1))
-			(*keys)[5] = ONE_KEY;
+			(*keys)[ONE_KEY] = ONE_KEY;
 
 		if (game->isKeyPressed(SDLK_2) || game->isKeyPressed(SDLK_KP_2))
-			(*keys)[6] = TWO_KEY;
+			(*keys)[TWO_KEY] = TWO_KEY;
 
 		if (game->isKeyPressed(SDLK_3) || game->isKeyPressed(SDLK_KP_3))
-			(*keys)[7] = THREE_KEY;
+			(*keys)[THREE_KEY] = THREE_KEY;
 
 		if (game->isKeyPressed(SDLK_SPACE))
-			(*keys)[8] = SPACE_KEY;
+			(*keys)[SPACE_KEY] = SPACE_KEY;
 
 		return 0;
 	}

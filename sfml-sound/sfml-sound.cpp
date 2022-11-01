@@ -1,9 +1,10 @@
 #include <SFML/Audio.hpp>
-#include <iostream>
-#include <unistd.h>
 
 sf::Sound sound;
-sf::SoundBuffer buffer;
+sf::SoundBuffer soundBuffer;
+
+sf::Music music;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,11 +17,27 @@ extern "C" {
 
 	int load_sound(const char *path)
 	{
-		if (!buffer.loadFromFile(path))
+		if (!soundBuffer.loadFromFile(path))
 			return -1;
 
-		sound.setBuffer(buffer);
+		sound.setBuffer(soundBuffer);
 		return 0;
+	}
+
+	int play_music(const char *path, float volume)
+	{
+		if (!music.openFromFile(path))
+			return -1;
+
+		music.setLoop(true);
+		music.setVolume(volume);
+		music.play();
+		return 0;
+	}
+
+	void stop_music()
+	{
+		music.stop();
 	}
 
 #ifdef __cplusplus

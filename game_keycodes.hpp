@@ -1,10 +1,18 @@
-#define NONE_KEY 0
-#define EXIT_KEY 1
-#define UP_KEY 2
-#define DOWN_KEY 3
-#define LEFT_KEY 4
-#define RIGHT_KEY 5
-#define ONE_KEY 6
-#define TWO_KEY 7
-#define THREE_KEY 8
-#define SPACE_KEY 9
+enum e_game_keycodes
+{
+	NONE_KEY = 0,
+	EXIT_KEY,
+	UP_KEY,
+	DOWN_KEY,
+	LEFT_KEY,
+	RIGHT_KEY,
+	W_KEY,
+	A_KEY,
+	S_KEY,
+	D_KEY,
+	ONE_KEY,
+	TWO_KEY,
+	THREE_KEY,
+	SPACE_KEY,
+	KEY_TOTAL_COUNT
+};

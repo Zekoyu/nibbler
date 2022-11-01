@@ -1,3 +1,4 @@
+# GRAPHICS / SOUND
 brew install curl # Download failed: Homebrew-installed `curl` is not installed for: https://downloads.xiph.org/releases/flac/flac-1.4.2.tar.xz
 brew install sfml
 
@@ -13,4 +14,5 @@ if [ ! -d ./raylib/raylib/src ]; then
 	cd ../../
 fi
 
+# SYMBOLIC LINKS
 ./symlink_includes.sh
