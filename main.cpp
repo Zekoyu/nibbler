@@ -17,6 +17,7 @@
 #define GAME_FPS 20 // Game ticks per second (should not be lower then REFRESH_FPS)
 #define SQUARE_SIZE_PX 10
 
+// bonuses: Fast as fuck mode, multiplayer mode, easy mode, music, background image
 enum e_gamemode
 {
 	GAMEMODE_NORMAL,

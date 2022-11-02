@@ -1,3 +1,7 @@
+#ifndef GAME_FUNCTIONS_HPP
+#define GAME_FUNCTIONS_HPP
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,3 +25,6 @@ typedef void (*render_t)(void);
 typedef void (*show_game_over_t)(void);
 typedef void (*exit_nibbler_t)(void);
 typedef void (*set_background_image_t)(const char *path);
+
+
+#endif

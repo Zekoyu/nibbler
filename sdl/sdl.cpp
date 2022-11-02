@@ -6,7 +6,7 @@
 #include "../game_keycodes.hpp"
 #include "../game_functions.hpp"
 #include "../IGame.hpp"
-#include "../HSL_RGB.hpp"
+#include "./hsl-rgb.hpp"
 
 struct SDLColoredSquare
 {

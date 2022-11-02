@@ -1,13 +1,4 @@
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define MAX(a,b) ((a)>(b)?(a):(b))
-
-typedef struct rgb {
-  float r, g, b;
-} RGB;
-
-typedef struct hsl {
-  float h, s, l;
-} HSL;
+#include "./hsl-rgb.hpp"
 
 /*
  * Converts an RGB color value to HSL. Conversion formula
@@ -15,7 +6,8 @@ typedef struct hsl {
  * Assumes r, g, and b are contained in the set [0, 255] and
  * returns HSL in the set [0, 1].
  */
-HSL rgb2hsl(float r, float g, float b) {
+HSL rgb2hsl(float r, float g, float b)
+{
 
   HSL result;
 
@@ -58,7 +50,8 @@ HSL rgb2hsl(float r, float g, float b) {
  * Converts an HUE to r, g or b.
  * returns float in the set [0, 1].
  */
-float hue2rgb(float p, float q, float t) {
+float hue2rgb(float p, float q, float t)
+{
 
   if (t < 0)
     t += 1;
@@ -83,7 +76,8 @@ float hue2rgb(float p, float q, float t) {
  * Assumes h, s, and l are contained in the set [0, 1] and
  * returns RGB in the set [0, 255].
  */
-RGB hsl2rgb(float h, float s, float l) {
+RGB hsl2rgb(float h, float s, float l)
+{
 
   RGB result;
 

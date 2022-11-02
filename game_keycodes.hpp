@@ -1,3 +1,6 @@
+#ifndef GAME_KEYCODES_HPP
+#define GAME_KEYCODES_HPP
+
 enum e_game_keycodes
 {
 	NONE_KEY = 0,
@@ -16,3 +19,5 @@ enum e_game_keycodes
 	SPACE_KEY,
 	KEY_TOTAL_COUNT
 };
+
+#endif
