@@ -6,11 +6,7 @@
 test
 raylib/raylib/*
 nibbler
-raylib/raylib
-include-raylib/
-include-sdl/
-include-sfml/
-lib-raylib/
-lib-sdl/
-lib-sdl_ttf/
-lib-sfml/
+lib-*/
+include-*/
+lib-*/*
+include-*/*
