@@ -315,6 +315,8 @@ int main(int argc, char **argv)
 									  							{"./sfml/libnibbler_sfml.so", "SFML"},
 																{"./raylib/libnibbler_raylib.so", "Raylib"} };
 
+	std::vector<std::string> gameOverSounds = { "./sounds/game_over1.wav", "./sounds/game_over2.wav", "./sounds/game_over3.wav" };
+
 	const char *soundLibPath = "./sfml-sound/libnibbler_sfml-sound.so";
 	void *soundLibHandle = dlOpenOrExit(soundLibPath);
 
@@ -322,6 +324,8 @@ int main(int argc, char **argv)
 	play_sound_t play_sound = (play_sound_t)loadDynamicSymbol(soundLibHandle, "play_sound");
 	play_music_t play_music = (play_music_t)loadDynamicSymbol(soundLibHandle, "play_music");
 	stop_music_t stop_music = (stop_music_t)loadDynamicSymbol(soundLibHandle, "stop_music");
+
+	(void) stop_music;
 
 	if (load_sound("./sounds/grow.wav") != 0)
 		std::cerr << "Cannot open sound grow.wav" << std::endl;
@@ -592,7 +596,7 @@ int main(int argc, char **argv)
 		{
 			if (gameOver)
 			{
-				stop_music();
+				// stop_music();
 				continue;
 			}
 			// TODO gameTick function
@@ -636,6 +640,8 @@ int main(int argc, char **argv)
 			{
 				std::cout << "Game over" << std::endl;
 				gameOver = true;
+				int gameOverSoundIndex = rand() % gameOverSounds.size();;
+				play_music(gameOverSounds[gameOverSoundIndex].c_str(), 100.0);
 				gameFps = GAME_FPS;
 				lib.show_game_over();
 				continue;
@@ -650,6 +656,8 @@ int main(int argc, char **argv)
 				{
 					std::cout << "Game over" << std::endl;
 					gameOver = true;
+					int gameOverSoundIndex = rand() % gameOverSounds.size();;
+					play_music(gameOverSounds[gameOverSoundIndex].c_str(), 100.0);
 					gameFps = GAME_FPS;
 					lib.show_game_over();
 					continue;
@@ -677,6 +685,8 @@ int main(int argc, char **argv)
 				{
 					std::cout << "Game over" << std::endl;
 					gameOver = true;
+					int gameOverSoundIndex = rand() % gameOverSounds.size();;
+					play_music(gameOverSounds[gameOverSoundIndex].c_str(), 100.0);
 					gameFps = GAME_FPS;
 					lib.show_game_over();
 					continue;
