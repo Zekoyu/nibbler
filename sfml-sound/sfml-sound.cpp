@@ -11,6 +11,8 @@ extern "C" {
 #endif
 	int play_sound()
 	{
+		float randBetweenZeroAndOne = (float) rand() / RAND_MAX;
+		sound.setPitch(1.0f + (randBetweenZeroAndOne - 0.5f));
 		sound.play();
 		return 0;
 	}
@@ -19,6 +21,8 @@ extern "C" {
 	{
 		if (!soundBuffer.loadFromFile(path))
 			return -1;
+
+		srand(time(NULL));
 
 		sound.setBuffer(soundBuffer);
 		return 0;
