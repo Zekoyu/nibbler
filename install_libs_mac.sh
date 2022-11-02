@@ -11,7 +11,7 @@ if [ ! -d ./raylib/raylib/src ]; then
 	cd ./raylib/src
 	make PLATFORM=PLATFORM_DESKTOP CUSTOM_CFLAGS="-DSUPPORT_FILEFORMAT_BMP=1"
 	# sudo make install RAYLIB_LIBTYPE=SHARED
-	cd ../../
+	cd ../../..
 fi
 
 # SYMBOLIC LINKS
